@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Veterinary Records{% endblock %}
+
+{% block content %}
+<h2>Veterinary Records</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Cow</th>
+            <th>Record Type</th>
+            <th>Veterinarian</th>
+            <th>Diagnosis</th>
+            <th>Next Visit</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.date }}</td>
+            <td>{{ record.cow.tag_number }}</td>
+            <td>{{ record.get_record_type_display }}</td>
+            <td>{{ record.veterinarian }}</td>
+            <td>{{ record.diagnosis|truncatechars:50 }}</td>
+            <td>{{ record.next_visit_date|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

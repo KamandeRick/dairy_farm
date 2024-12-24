@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Milk Production Records{% endblock %}
+
+{% block content %}
+<h2>Milk Production Records</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Cow</th>
+            <th>Morning (L)</th>
+            <th>Evening (L)</th>
+            <th>Total (L)</th>
+            <th>Fat Content (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in records %}
+        <tr>
+            <td>{{ record.date }}</td>
+            <td>{{ record.cow.tag_number }}</td>
+            <td>{{ record.morning_amount }}</td>
+            <td>{{ record.evening_amount }}</td>
+            <td>{{ record.total_production }}</td>
+            <td>{{ record.fat_content|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
