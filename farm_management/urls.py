@@ -20,4 +20,9 @@ urlpatterns = [
 
     # Veterinary Record URLs
     path('vet-records/', views.vet_record_list, name='vet_record_list'),
+
+    #Create Forms urls
+    path('cow/add/', views.add_cow, name='add_cow'),
+    path('milk-production/add/', views.add_milk_record, name='add_milk_record'),
+    path('vet-records/add/', views.add_vet_record, name='add_vet_record'),
 ]
