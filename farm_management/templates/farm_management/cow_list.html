@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Cows{% endblock %}
+
+{% block content %}
+<h2>Cow List</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tag Number</th>
+            <th>Name</th>
+            <th>Breed</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cow in cows %}
+        <tr>
+            <td>{{ cow.tag_number }}</td>
+            <td>{{ cow.name }}</td>
+            <td>{{ cow.breed }}</td>
+            <td>{{ cow.status }}</td>
+            <td>
+                <a href="{% url 'farm_management:cow_detail' cow.tag_number %}" 
+                   class="btn btn-sm btn-primary">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

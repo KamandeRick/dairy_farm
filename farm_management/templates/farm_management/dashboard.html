@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2>Farm Dashboard</h2>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Herd Overview</h5>
+                <p>Total Cows: {{ total_cows }}</p>
+                <p>Active Cows: {{ active_cows }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Milk Production</h5>
+                <ul class="list-group">
+                    {% for record in latest_milk_records %}
+                    <li class="list-group-item">
+                        {{ record.cow.tag_number }} - {{ record.date }}: {{ record.total_production }}L
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
