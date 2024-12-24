@@ -1,0 +1,42 @@
+# Python
+*.pyc
+*~
+__pycache__
+*.pyo
+*.pyd
+.Python
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+ENV/
+
+# Django
+*.log
+db.sqlite3
+media/
+
+# IDE - VSCode
+.vscode/
+*.code-workspace
+
+# IDE - PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Environment variables
+.env
+
+# Static files collected
+staticfiles/
+
+# Database backups
+*.sql
+*.sqlite3-journal
+
+# System Files
+.DS_Store
+Thumbs.db
