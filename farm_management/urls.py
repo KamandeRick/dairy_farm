@@ -25,4 +25,7 @@ urlpatterns = [
     path('cow/add/', views.add_cow, name='add_cow'),
     path('milk-production/add/', views.add_milk_record, name='add_milk_record'),
     path('vet-records/add/', views.add_vet_record, name='add_vet_record'),
+
+    # Authentication URLs
+    path('register/', views.register, name='register'),
 ]
