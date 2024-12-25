@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Farm(models.Model):
     name = models.CharField(max_length=100)
@@ -49,10 +50,12 @@ class Cow(models.Model):
 
     class Meta:
         ordering = ['tag_number']
+        unique_together = ['farm', 'tag_number']
 
 class MilkProduction(models.Model):
     cow = models.ForeignKey(Cow, on_delete=models.CASCADE, related_name='milk_records')
     date = models.DateField(default=timezone.now)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     
     # Morning Production
     morning_amount = models.DecimalField(
