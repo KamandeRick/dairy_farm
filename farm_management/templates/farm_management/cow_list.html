@@ -4,6 +4,9 @@
 
 {% block content %}
 <h2>Cow List</h2>
+
+<a href="{% url 'farm_management:add_cow' %}" class="btn btn-primary mb-3">Add New Cow</a>
+
 <table class="table table-striped">
     <thead>
         <tr>
