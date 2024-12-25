@@ -30,7 +30,7 @@ class Cow(models.Model):
 
 
     # Add farm relationship
-    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='cows')
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='cows',  null=True, blank=True)
 
     # Basic Information
     tag_number = models.CharField(max_length=20, unique=True)
@@ -50,12 +50,12 @@ class Cow(models.Model):
 
     class Meta:
         ordering = ['tag_number']
-        unique_together = ['farm', 'tag_number']
+        #unique_together = ['farm', 'tag_number']
 
 class MilkProduction(models.Model):
     cow = models.ForeignKey(Cow, on_delete=models.CASCADE, related_name='milk_records')
     date = models.DateField(default=timezone.now)
-    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     
     # Morning Production
     morning_amount = models.DecimalField(
@@ -104,7 +104,7 @@ class VeterinaryRecord(models.Model):
     ]
 
     cow = models.ForeignKey(Cow, on_delete=models.CASCADE, related_name='vet_records')
-    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     date = models.DateField(default=timezone.now)
     record_type = models.CharField(max_length=20, choices=RECORD_TYPE_CHOICES)
     

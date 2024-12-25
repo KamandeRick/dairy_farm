@@ -1,21 +1,28 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Cow, MilkProduction, VeterinaryRecord
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Farm, Cow, MilkProduction, VeterinaryRecord
 from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
 
-#def index(request):
-    #"""The home page for Farm Management"""
-    #return render(request, 'farm_management/index.html')
-
-# Dashboard
 @login_required
 def dashboard(request):
-    total_cows = Cow.objects.count()
-    active_cows = Cow.objects.filter(status='ACTIVE').count()
-    latest_milk_records = MilkProduction.objects.select_related('cow').order_by('-date')[:5]
-    recent_vet_records = VeterinaryRecord.objects.select_related('cow').order_by('-date')[:5]
-
+    # Get or create the user's farm
+    farm, created = Farm.objects.get_or_create(
+        owner=request.user,
+        defaults={'name': f"{request.user.username}'s Farm"}
+    )
+    
+    total_cows = Cow.objects.filter(farm=farm).count()
+    active_cows = Cow.objects.filter(farm=farm, status='ACTIVE').count()
+    latest_milk_records = MilkProduction.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')[:5]
+    recent_vet_records = VeterinaryRecord.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')[:5]
+    
     context = {
+        'farm': farm,
         'total_cows': total_cows,
         'active_cows': active_cows,
         'latest_milk_records': latest_milk_records,
@@ -23,15 +30,16 @@ def dashboard(request):
     }
     return render(request, 'farm_management/dashboard.html', context)
 
-# Cow Views
 @login_required
 def cow_list(request):
-    cows = Cow.objects.all()
+    farm = request.user.farm_set.first()
+    cows = Cow.objects.filter(farm=farm)
     return render(request, 'farm_management/cow_list.html', {'cows': cows})
 
 @login_required
 def cow_detail(request, tag_number):
-    cow = get_object_or_404(Cow, tag_number=tag_number)
+    farm = request.user.farm_set.first()
+    cow = get_object_or_404(Cow, farm=farm, tag_number=tag_number)
     milk_records = cow.milk_records.order_by('-date')[:10]
     vet_records = cow.vet_records.order_by('-date')[:10]
     
@@ -42,25 +50,31 @@ def cow_detail(request, tag_number):
     }
     return render(request, 'farm_management/cow_detail.html', context)
 
-# Milk Production Views
 @login_required
 def milk_production_list(request):
-    records = MilkProduction.objects.select_related('cow').order_by('-date')
+    farm = request.user.farm_set.first()
+    records = MilkProduction.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')
     return render(request, 'farm_management/milk_production_list.html', {'records': records})
 
-# Veterinary Record Views
 @login_required
 def vet_record_list(request):
-    records = VeterinaryRecord.objects.select_related('cow').order_by('-date')
+    farm = request.user.farm_set.first()
+    records = VeterinaryRecord.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')
     return render(request, 'farm_management/vet_record_list.html', {'records': records})
 
-# Create Views
 @login_required
 def add_cow(request):
+    farm = request.user.farm_set.first()
     if request.method == 'POST':
         form = CowForm(request.POST)
         if form.is_valid():
-            form.save()
+            cow = form.save(commit=False)
+            cow.farm = farm
+            cow.save()
             return redirect('farm_management:cow_list')
     else:
         form = CowForm()
@@ -68,22 +82,40 @@ def add_cow(request):
 
 @login_required
 def add_milk_record(request):
+    farm = request.user.farm_set.first()
     if request.method == 'POST':
         form = MilkProductionForm(request.POST)
         if form.is_valid():
-            form.save()
+            record = form.save(commit=False)
+            record.recorded_by = request.user
+            # Verify the cow belongs to the user's farm
+            if record.cow.farm != farm:
+                messages.error(request, "Invalid cow selection.")
+                return render(request, 'farm_management/milk_production_form.html', {'form': form})
+            record.save()
             return redirect('farm_management:milk_production_list')
     else:
         form = MilkProductionForm()
+        # Filter cow choices to only show farm's cows
+        form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
     return render(request, 'farm_management/milk_production_form.html', {'form': form})
 
 @login_required
 def add_vet_record(request):
+    farm = request.user.farm_set.first()
     if request.method == 'POST':
         form = VeterinaryRecordForm(request.POST)
         if form.is_valid():
-            form.save()
+            record = form.save(commit=False)
+            record.recorded_by = request.user
+            # Verify the cow belongs to the user's farm
+            if record.cow.farm != farm:
+                messages.error(request, "Invalid cow selection.")
+                return render(request, 'farm_management/vet_record_form.html', {'form': form})
+            record.save()
             return redirect('farm_management:vet_record_list')
     else:
         form = VeterinaryRecordForm()
+        # Filter cow choices to only show farm's cows
+        form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
     return render(request, 'farm_management/vet_record_form.html', {'form': form})
