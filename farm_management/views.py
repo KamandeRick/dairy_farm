@@ -15,6 +15,11 @@ def register(request):
                 name=f"{user.username}'s Farm",
                 owner=user
             )
+            # Add user to Farm Owner group
+            owner_group = Group.objects.get(name='Farm Owner')
+            user.groups.add(owner_group)
+
+
             messages.success(request, 'Account created successfully. You can now login.')
             return redirect('login')
     else:
