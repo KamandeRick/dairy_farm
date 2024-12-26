@@ -3,10 +3,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+<<<<<<< HEAD
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+=======
+from django.contrib.auth.forms import UserCreationForm
+>>>>>>> 8d55bc62081881fbf1501bb381c39602f20b88f8
 from .models import Farm, Cow, MilkProduction, VeterinaryRecord
 from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
 from .mixins import FarmUserMixin, FarmManagerMixin, FarmOwnerMixin
@@ -16,10 +20,15 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+<<<<<<< HEAD
+=======
+            # Create a farm for the new user
+>>>>>>> 8d55bc62081881fbf1501bb381c39602f20b88f8
             farm = Farm.objects.create(
                 name=f"{user.username}'s Farm",
                 owner=user
             )
+<<<<<<< HEAD
             owner_group, created = Group.objects.get(name='Farm Owner')
 
             content_type = ContentType.objects.get_for_model(Cow)
@@ -27,6 +36,13 @@ def register(request):
             owner_group.permissions.set(permissions)
 
             user.groups.add(owner_group)
+=======
+            # Add user to Farm Owner group
+            owner_group = Group.objects.get(name='Farm Owner')
+            user.groups.add(owner_group)
+
+
+>>>>>>> 8d55bc62081881fbf1501bb381c39602f20b88f8
             messages.success(request, 'Account created successfully. You can now login.')
             return redirect('login')
     else:
