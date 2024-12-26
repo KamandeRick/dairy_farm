@@ -11,7 +11,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             # Create a farm for the new user
-            Farm.objects.create(
+            farm = Farm.objects.create(
                 name=f"{user.username}'s Farm",
                 owner=user
             )
