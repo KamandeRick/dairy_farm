@@ -10,6 +10,14 @@ class Farm(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
 
+
+    class Meta:
+        permissions = [
+            ("manage_farm", "Can manage farm settings"),
+            ("manage_workers", "Can manage farm workers"),
+            ("view_reports", "Can view farm reports"),
+        ]
+
     def __str__(self):
         return self.name
 
