@@ -84,6 +84,12 @@ DATABASES = {
     }
 }
 
+# Auth settings
+LOGIN_REDIRECT_URL = '/'  # Redirect to dashboard after login
+LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redirect to login page after logout
+LOGIN_URL = '/accounts/login/'  # Where to redirect if user isn't logged in
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
