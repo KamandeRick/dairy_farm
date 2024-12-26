@@ -33,7 +33,7 @@ class Cow(models.Model):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name='cows',  null=True, blank=True)
 
     # Basic Information
-    tag_number = models.CharField(max_length=20, unique=True)
+    tag_number = models.CharField(max_length=20)
     name = models.CharField(max_length=100, blank=True)
     breed = models.CharField(max_length=20, choices=BREED_CHOICES)
     date_of_birth = models.DateField()
@@ -50,7 +50,7 @@ class Cow(models.Model):
 
     class Meta:
         ordering = ['tag_number']
-        #unique_together = ['farm', 'tag_number']
+        unique_together = ['farm', 'tag_number']
 
 class MilkProduction(models.Model):
     cow = models.ForeignKey(Cow, on_delete=models.CASCADE, related_name='milk_records')
