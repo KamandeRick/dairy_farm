@@ -36,6 +36,7 @@ staticfiles/
 # Database backups
 *.sql
 *.sqlite3-journal
+*.json
 
 # System Files
 .DS_Store
