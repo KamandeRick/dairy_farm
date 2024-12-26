@@ -16,7 +16,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'farm_management:cow_list' %}">Cows</a>
                     </li>
@@ -27,9 +28,43 @@
                         <a class="nav-link" href="{% url 'farm_management:vet_record_list' %}">Veterinary Records</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            Welcome, {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'password_change' %}">Change Password</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'farm_management:register' %}">Register</a>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
         </div>
     </nav>
+
+    <!-- Messages -->
+    <div class="container mt-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 
     <!-- Main Content -->
     <div class="container mt-4">
