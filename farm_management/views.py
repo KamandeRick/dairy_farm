@@ -4,6 +4,22 @@ from django.contrib import messages
 from .models import Farm, Cow, MilkProduction, VeterinaryRecord
 from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
 
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Create a farm for the new user
+            Farm.objects.create(
+                name=f"{user.username}'s Farm",
+                owner=user
+            )
+            messages.success(request, 'Account created successfully. You can now login.')
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
 @login_required
 def dashboard(request):
     # Get or create the user's farm
