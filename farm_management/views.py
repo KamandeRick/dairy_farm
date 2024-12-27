@@ -171,6 +171,26 @@ def cow_detail(request, tag_number):
     return render(request, 'farm_management/cow_detail.html', context)
 
 @login_required
+def update_cow(request, tag_number):
+    farm = request.user.farm_set.first()
+    cow = get_object_or_404(Cow, farm=farm, tag_number=tag_number)
+    
+    if request.method == 'POST':
+        form = CowForm(request.POST, instance=cow)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cow details updated successfully.')
+            return redirect('farm_management:cow_detail', tag_number=cow.tag_number)
+    else:
+        form = CowForm(instance=cow)
+    
+    return render(request, 'farm_management/cow_form.html', {
+        'form': form,
+        'cow': cow,
+        'is_update': True
+    })
+
+@login_required
 def milk_production_list(request):
     farm = request.user.farm_set.first()
     records = MilkProduction.objects.select_related('cow').filter(
