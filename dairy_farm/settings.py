@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #MY APPS
     'farm_management',
     'widget_tweaks',
+    'plotly',
 ]
 
 MIDDLEWARE = [

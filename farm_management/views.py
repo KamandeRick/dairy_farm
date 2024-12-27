@@ -1,240 +1,241 @@
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-<<<<<<< HEAD
-from django.urls import reverse_lazy
-from django.db.models import Q
-from django.contrib.auth.models import Group, Permission
-from django.contrib.contenttypes.models import ContentType
-=======
+from django.db.models import Sum, Max
+from django.utils import timezone
+from datetime import timedelta
 from django.contrib.auth.forms import UserCreationForm
->>>>>>> 8d55bc62081881fbf1501bb381c39602f20b88f8
+from django.contrib.auth.models import Group
 from .models import Farm, Cow, MilkProduction, VeterinaryRecord
 from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
-from .mixins import FarmUserMixin, FarmManagerMixin, FarmOwnerMixin
+import plotly.graph_objects as go
+from plotly.utils import PlotlyJSONEncoder
+import json
 
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-<<<<<<< HEAD
-=======
             # Create a farm for the new user
->>>>>>> 8d55bc62081881fbf1501bb381c39602f20b88f8
             farm = Farm.objects.create(
                 name=f"{user.username}'s Farm",
                 owner=user
             )
-<<<<<<< HEAD
-            owner_group, created = Group.objects.get(name='Farm Owner')
-
-            content_type = ContentType.objects.get_for_model(Cow)
-            permissions = Permission.objects.filter(content_type=content_type)
-            owner_group.permissions.set(permissions)
-
-            user.groups.add(owner_group)
-=======
             # Add user to Farm Owner group
             owner_group = Group.objects.get(name='Farm Owner')
             user.groups.add(owner_group)
 
 
->>>>>>> 8d55bc62081881fbf1501bb381c39602f20b88f8
             messages.success(request, 'Account created successfully. You can now login.')
             return redirect('login')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
-class DashboardView(LoginRequiredMixin, FarmUserMixin, DetailView):
-    model = Farm
-    template_name = 'farm_management/dashboard.html'
-    context_object_name = 'farm'
-
-    def get_object(self):
-        return get_object_or_404(Farm, owner=self.request.user)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        farm = self.get_object()
-        context.update({
-            'total_cows': Cow.objects.filter(farm=farm).count(),
-            'active_cows': Cow.objects.filter(farm=farm, status='ACTIVE').count(),
-            'latest_milk_records': MilkProduction.objects.select_related('cow').filter(
-                cow__farm=farm
-            ).order_by('-date')[:5],
-            'recent_vet_records': VeterinaryRecord.objects.select_related('cow').filter(
-                cow__farm=farm
-            ).order_by('-date')[:5],
-        })
-        return context
-
-class CowListView(LoginRequiredMixin, FarmUserMixin, ListView):
-    model = Cow
-    template_name = 'farm_management/cow_list.html'
-    context_object_name = 'cows'
-
-    def get_queryset(self):
-        return Cow.objects.filter(farm__owner=self.request.user)
-
-class CowDetailView(LoginRequiredMixin, FarmUserMixin, DetailView):
-    model = Cow
-    template_name = 'farm_management/cow_detail.html'
-    context_object_name = 'cow'
-    slug_field = 'tag_number'
-    slug_url_kwarg = 'tag_number'
-
-    def get_queryset(self):
-        return Cow.objects.filter(farm__owner=self.request.user)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        cow = self.get_object()
-        context.update({
-            'milk_records': cow.milk_records.order_by('-date')[:10],
-            'vet_records': cow.vet_records.order_by('-date')[:10],
-        })
-        return context
-
-class CowCreateView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, CreateView):
-    model = Cow
-    form_class = CowForm
-    template_name = 'farm_management/cow_form.html'
-    permission_required = 'farm_management.add_cow'
-    success_url = reverse_lazy('farm_management:cow_list')
-
-    def form_valid(self, form):
-        form.instance.farm = self.request.user.farm_set.first()
-        return super().form_valid(form)
-
-class MilkProductionListView(LoginRequiredMixin, FarmUserMixin, ListView):
-    model = MilkProduction
-    template_name = 'farm_management/milk_production_list.html'
-    context_object_name = 'records'
-
-    def get_queryset(self):
-        return MilkProduction.objects.select_related('cow').filter(
-            cow__farm__owner=self.request.user
-        ).order_by('-date')
-
-class MilkProductionCreateView(LoginRequiredMixin, FarmUserMixin, PermissionRequiredMixin, CreateView):
-    model = MilkProduction
-    form_class = MilkProductionForm
-    template_name = 'farm_management/milk_production_form.html'
-    permission_required = 'farm_management.add_milkproduction'
-    success_url = reverse_lazy('farm_management:milk_production_list')
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields['cow'].queryset = Cow.objects.filter(
-            farm__owner=self.request.user
-        )
-        return form
-
-    def form_valid(self, form):
-        form.instance.recorded_by = self.request.user
-        return super().form_valid(form)
-
-class MilkProductionUpdateView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, UpdateView):
-    model = MilkProduction
-    form_class = MilkProductionForm
-    template_name = 'farm_management/milk_production_form.html'
-    permission_required = 'farm_management.change_milkproduction'
-    success_url = reverse_lazy('farm_management:milk_production_list')
-
-    def get_queryset(self):
-        return MilkProduction.objects.filter(cow__farm__owner=self.request.user)
-
-class MilkProductionDeleteView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, DeleteView):
-    model = MilkProduction
-    template_name = 'farm_management/milk_production_confirm_delete.html'
-    permission_required = 'farm_management.delete_milkproduction'
-    success_url = reverse_lazy('farm_management:milk_production_list')
-
-    def get_queryset(self):
-        return MilkProduction.objects.filter(cow__farm__owner=self.request.user)
-
-class VetRecordListView(LoginRequiredMixin, FarmUserMixin, ListView):
-    model = VeterinaryRecord
-    template_name = 'farm_management/vet_record_list.html'
-    context_object_name = 'records'
-
-    def get_queryset(self):
-        return VeterinaryRecord.objects.select_related('cow').filter(
-            cow__farm__owner=self.request.user
-        ).order_by('-date')
-
-class VetRecordCreateView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, CreateView):
-    model = VeterinaryRecord
-    form_class = VeterinaryRecordForm
-    template_name = 'farm_management/vet_record_form.html'
-    permission_required = 'farm_management.add_veterinaryrecord'
-    success_url = reverse_lazy('farm_management:vet_record_list')
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields['cow'].queryset = Cow.objects.filter(
-            farm__owner=self.request.user
-        )
-        return form
-
-    def form_valid(self, form):
-        form.instance.recorded_by = self.request.user
-        return super().form_valid(form)
-
-class VetRecordUpdateView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, UpdateView):
-    model = VeterinaryRecord
-    form_class = VeterinaryRecordForm
-    template_name = 'farm_management/vet_record_form.html'
-    permission_required = 'farm_management.change_veterinaryrecord'
-    success_url = reverse_lazy('farm_management:vet_record_list')
-
-    def get_queryset(self):
-        return VeterinaryRecord.objects.filter(cow__farm__owner=self.request.user)
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields['cow'].queryset = Cow.objects.filter(
-            farm__owner=self.request.user
-        )
-        return form
-
-class VetRecordDeleteView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, DeleteView):
-    model = VeterinaryRecord
-    template_name = 'farm_management/vet_record_confirm_delete.html'
-    permission_required = 'farm_management.delete_veterinaryrecord'
-    success_url = reverse_lazy('farm_management:vet_record_list')
-
-    def get_queryset(self):
-        return VeterinaryRecord.objects.filter(cow__farm__owner=self.request.user)
-
-class CowUpdateView(LoginRequiredMixin, FarmManagerMixin, PermissionRequiredMixin, UpdateView):
-    model = Cow
-    form_class = CowForm
-    template_name = 'farm_management/cow_form.html'
-    permission_required = 'farm_management.change_cow'
-    success_url = reverse_lazy('farm_management:cow_list')
+@login_required
+def dashboard(request):
+    # Get or create the user's farm
+    farm, created = Farm.objects.get_or_create(
+        owner=request.user,
+        defaults={'name': f"{request.user.username}'s Farm"}
+    )
     
-    def get_queryset(self):
-        return Cow.objects.filter(farm__owner=self.request.user)
 
-class CowDeleteView(LoginRequiredMixin, FarmOwnerMixin, PermissionRequiredMixin, DeleteView):
-    model = Cow
-    template_name = 'farm_management/cow_confirm_delete.html'
-    permission_required = 'farm_management.delete_cow'
-    success_url = reverse_lazy('farm_management:cow_list')
+    #basic statistics
+    total_cows = Cow.objects.filter(farm=farm).count()
+    active_cows = Cow.objects.filter(farm=farm, status='ACTIVE').count()
 
-    def get_queryset(self):
-        return Cow.objects.filter(farm__owner=self.request.user)
+    #recent milk production
+    latest_milk_records = MilkProduction.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')[:5]
 
-class FarmUpdateView(LoginRequiredMixin, FarmOwnerMixin, UpdateView):
-    model = Farm
-    fields = ['name', 'address', 'phone']
-    template_name = 'farm_management/farm_form.html'
-    success_url = reverse_lazy('farm_management:dashboard')
+    #Total milk production
+    # Calculate total milk production
+    today = timezone.now().date()
+    total_milk = MilkProduction.objects.filter(
+        cow__farm=farm
+    ).aggregate(
+        total=Sum('morning_amount') + Sum('evening_amount')
+    )['total'] or 0
 
-    def get_object(self, queryset=None):
-        return get_object_or_404(Farm, owner=self.request.user)
+    #Recent vet records
+    recent_vet_records = VeterinaryRecord.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')[:5]
+
+    # Get upcoming vet visits
+    upcoming_visits = VeterinaryRecord.objects.select_related('cow').filter(
+        cow__farm=farm,
+        next_visit_date__gte=today
+    ).order_by('next_visit_date')[:5]
+    
+    # Get today's best producer
+    today_best = MilkProduction.objects.filter(
+        cow__farm=farm,
+        date=today
+    ).annotate(
+        daily_total=Sum('morning_amount') + Sum('evening_amount')
+    ).order_by('-daily_total').first()
+
+    # Get last 7 days production data for the graph
+    #last_7_days = []
+    #for i in range(7):
+        #date = today - timedelta(days=i)
+        #daily_total = MilkProduction.objects.filter(
+            #cow__farm=farm,
+            #date=date
+        #).aggregate(
+            #total=Sum('morning_amount') + Sum('evening_amount')
+        #)['total'] or 0
+        #last_7_days.append({
+            #'date': date.strftime('%Y-%m-%d'),
+            #'total': float(daily_total)
+        #})
+
+    # Get last 7 days production data for the graph
+    dates = []
+    production_values = []
+    
+    for i in range(6, -1, -1):  # Last 7 days
+        date = today - timedelta(days=i)
+        daily_total = MilkProduction.objects.filter(
+            cow__farm=farm,
+            date=date
+        ).aggregate(
+            total=Sum('morning_amount') + Sum('evening_amount')
+        )['total'] or 0
+        
+        dates.append(date.strftime('%Y-%m-%d'))
+        production_values.append(float(daily_total))
+    
+    # Create the Plotly figure
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=production_values,
+        mode='lines+markers',
+        name='Daily Production',
+        line=dict(color='#2563eb', width=2),
+        marker=dict(size=8)
+    ))
+    
+    fig.update_layout(
+        title='Milk Production Over Last 7 Days',
+        xaxis_title='Date',
+        yaxis_title='Total Production (L)',
+        height=400,
+        margin=dict(l=20, r=20, t=40, b=20),
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
+    
+    # Convert the figure to JSON for the template
+    plot_div = fig.to_json()
+
+
+    context = {
+        'farm': farm,
+        'total_cows': total_cows,
+        'active_cows': active_cows,
+        'total_milk': total_milk,
+        'upcoming_visits': upcoming_visits,
+        'today_best': today_best,
+        #'production_data': json.dumps(list(reversed(last_7_days))),
+        'latest_milk_records': latest_milk_records,
+        'recent_vet_records': recent_vet_records,
+        'plot_div': plot_div,
+    }
+    return render(request, 'farm_management/dashboard.html', context)
+
+@login_required
+def cow_list(request):
+    farm = request.user.farm_set.first()
+    cows = Cow.objects.filter(farm=farm)
+    return render(request, 'farm_management/cow_list.html', {'cows': cows})
+
+@login_required
+def cow_detail(request, tag_number):
+    farm = request.user.farm_set.first()
+    cow = get_object_or_404(Cow, farm=farm, tag_number=tag_number)
+    milk_records = cow.milk_records.order_by('-date')[:10]
+    vet_records = cow.vet_records.order_by('-date')[:10]
+    
+    context = {
+        'cow': cow,
+        'milk_records': milk_records,
+        'vet_records': vet_records,
+    }
+    return render(request, 'farm_management/cow_detail.html', context)
+
+@login_required
+def milk_production_list(request):
+    farm = request.user.farm_set.first()
+    records = MilkProduction.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')
+    return render(request, 'farm_management/milk_production_list.html', {'records': records})
+
+@login_required
+def vet_record_list(request):
+    farm = request.user.farm_set.first()
+    records = VeterinaryRecord.objects.select_related('cow').filter(
+        cow__farm=farm
+    ).order_by('-date')
+    return render(request, 'farm_management/vet_record_list.html', {'records': records})
+
+@login_required
+def add_cow(request):
+    farm = request.user.farm_set.first()
+    if request.method == 'POST':
+        form = CowForm(request.POST)
+        if form.is_valid():
+            cow = form.save(commit=False)
+            cow.farm = farm
+            cow.save()
+            return redirect('farm_management:cow_list')
+    else:
+        form = CowForm()
+    return render(request, 'farm_management/cow_form.html', {'form': form})
+
+@login_required
+def add_milk_record(request):
+    farm = request.user.farm_set.first()
+    if request.method == 'POST':
+        form = MilkProductionForm(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.recorded_by = request.user
+            # Verify the cow belongs to the user's farm
+            if record.cow.farm != farm:
+                messages.error(request, "Invalid cow selection.")
+                return render(request, 'farm_management/milk_production_form.html', {'form': form})
+            record.save()
+            return redirect('farm_management:milk_production_list')
+    else:
+        form = MilkProductionForm()
+        # Filter cow choices to only show farm's cows
+        form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
+    return render(request, 'farm_management/milk_production_form.html', {'form': form})
+
+@login_required
+def add_vet_record(request):
+    farm = request.user.farm_set.first()
+    if request.method == 'POST':
+        form = VeterinaryRecordForm(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.recorded_by = request.user
+            # Verify the cow belongs to the user's farm
+            if record.cow.farm != farm:
+                messages.error(request, "Invalid cow selection.")
+                return render(request, 'farm_management/vet_record_form.html', {'form': form})
+            record.save()
+            return redirect('farm_management:vet_record_list')
+    else:
+        form = VeterinaryRecordForm()
+        # Filter cow choices to only show farm's cows
+        form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
+    return render(request, 'farm_management/vet_record_form.html', {'form': form})
