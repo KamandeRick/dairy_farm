@@ -8,6 +8,9 @@
             <a href="{% url 'farm_management:cow_milk_history' cow.tag_number %}" class="btn btn-info me-2">
                 Full Production History
             </a>
+            <a href="{% url 'farm_management:cow_vet_history' cow.tag_number %}" class="btn btn-success me-2">
+                Full Veterinary History
+            </a>
             <a href="{% url 'farm_management:update_cow' cow.tag_number %}" class="btn btn-primary">
             Update Details
             </a>
