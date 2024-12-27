@@ -4,8 +4,11 @@
 
 {% block content %}
 <h2>Farm Dashboard</h2>
+
+<!-- Top Stats Row -->
 <div class="row mt-4">
-    <div class="col-md-6">
+    <!-- Herd Overview -->
+    <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Herd Overview</h5>
@@ -14,6 +17,36 @@
             </div>
         </div>
     </div>
+
+    <!-- Total Milk Production -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Total Milk Production</h5>
+                <h3 class="text-primary">{{ total_milk|floatformat:2 }} L</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Best Producer -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Today's Best Producer</h5>
+                {% if today_best %}
+                    <p class="mb-1">{{ today_best.cow.name }} ({{ today_best.cow.tag_number }})</p>
+                    <h4 class="text-success">{{ today_best.daily_total|floatformat:2 }} L</h4>
+                {% else %}
+                    <p class="text-muted">No production recorded today</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row -->
+<div class="row mt-4">
+    <!-- Recent Milk Production -->
     <div class="col-md-6">
         <div class="card">
             <div class="card-body">
@@ -28,5 +61,62 @@
             </div>
         </div>
     </div>
+
+    <!-- Upcoming Vet Visits -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Upcoming Veterinary Visits</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tag</th>
+                                <th>Name</th>
+                                <th>Next Visit</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visit in upcoming_visits %}
+                            <tr>
+                                <td>{{ visit.cow.tag_number }}</td>
+                                <td>{{ visit.cow.name }}</td>
+                                <td>{{ visit.next_visit_date }}</td>
+                                <td>{{ visit.record_type }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No upcoming visits</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Production Graph Card -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Milk Production Trend</h5>
+                <div id="productionGraph" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var graphJSON = {{ plot_div|safe }};
+        Plotly.newPlot('productionGraph', graphJSON.data, graphJSON.layout);
+    });
+</script>
 {% endblock %}

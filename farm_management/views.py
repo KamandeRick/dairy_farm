@@ -1,10 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Sum, Max
+from django.utils import timezone
+from datetime import timedelta
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
 from .models import Farm, Cow, MilkProduction, VeterinaryRecord
 from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
+import plotly.graph_objects as go
+from plotly.utils import PlotlyJSONEncoder
+import json
 
 def register(request):
     if request.method == 'POST':
@@ -35,21 +41,112 @@ def dashboard(request):
         defaults={'name': f"{request.user.username}'s Farm"}
     )
     
+
+    #basic statistics
     total_cows = Cow.objects.filter(farm=farm).count()
     active_cows = Cow.objects.filter(farm=farm, status='ACTIVE').count()
+
+    #recent milk production
     latest_milk_records = MilkProduction.objects.select_related('cow').filter(
         cow__farm=farm
     ).order_by('-date')[:5]
+
+    #Total milk production
+    # Calculate total milk production
+    today = timezone.now().date()
+    total_milk = MilkProduction.objects.filter(
+        cow__farm=farm
+    ).aggregate(
+        total=Sum('morning_amount') + Sum('evening_amount')
+    )['total'] or 0
+
+    #Recent vet records
     recent_vet_records = VeterinaryRecord.objects.select_related('cow').filter(
         cow__farm=farm
     ).order_by('-date')[:5]
+
+    # Get upcoming vet visits
+    upcoming_visits = VeterinaryRecord.objects.select_related('cow').filter(
+        cow__farm=farm,
+        next_visit_date__gte=today
+    ).order_by('next_visit_date')[:5]
     
+    # Get today's best producer
+    today_best = MilkProduction.objects.filter(
+        cow__farm=farm,
+        date=today
+    ).annotate(
+        daily_total=Sum('morning_amount') + Sum('evening_amount')
+    ).order_by('-daily_total').first()
+
+    # Get last 7 days production data for the graph
+    #last_7_days = []
+    #for i in range(7):
+        #date = today - timedelta(days=i)
+        #daily_total = MilkProduction.objects.filter(
+            #cow__farm=farm,
+            #date=date
+        #).aggregate(
+            #total=Sum('morning_amount') + Sum('evening_amount')
+        #)['total'] or 0
+        #last_7_days.append({
+            #'date': date.strftime('%Y-%m-%d'),
+            #'total': float(daily_total)
+        #})
+
+    # Get last 7 days production data for the graph
+    dates = []
+    production_values = []
+    
+    for i in range(6, -1, -1):  # Last 7 days
+        date = today - timedelta(days=i)
+        daily_total = MilkProduction.objects.filter(
+            cow__farm=farm,
+            date=date
+        ).aggregate(
+            total=Sum('morning_amount') + Sum('evening_amount')
+        )['total'] or 0
+        
+        dates.append(date.strftime('%Y-%m-%d'))
+        production_values.append(float(daily_total))
+    
+    # Create the Plotly figure
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=dates,
+        y=production_values,
+        mode='lines+markers',
+        name='Daily Production',
+        line=dict(color='#2563eb', width=2),
+        marker=dict(size=8)
+    ))
+    
+    fig.update_layout(
+        title='Milk Production Over Last 7 Days',
+        xaxis_title='Date',
+        yaxis_title='Total Production (L)',
+        height=400,
+        margin=dict(l=20, r=20, t=40, b=20),
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        hovermode='x unified'
+    )
+    
+    # Convert the figure to JSON for the template
+    plot_div = fig.to_json()
+
+
     context = {
         'farm': farm,
         'total_cows': total_cows,
         'active_cows': active_cows,
+        'total_milk': total_milk,
+        'upcoming_visits': upcoming_visits,
+        'today_best': today_best,
+        #'production_data': json.dumps(list(reversed(last_7_days))),
         'latest_milk_records': latest_milk_records,
         'recent_vet_records': recent_vet_records,
+        'plot_div': plot_div,
     }
     return render(request, 'farm_management/dashboard.html', context)
 
