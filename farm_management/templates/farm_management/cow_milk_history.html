@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cow.tag_number }} - Milk Production History{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Milk Production History: {{ cow.tag_number }} - {{ cow.name }}</h2>
+        <a href="{% url 'farm_management:cow_detail' cow.tag_number %}" class="btn btn-secondary">
+            Back to Cow Details
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Production Summary</h5>
+                    <p><strong>Total Production:</strong> {{ total_production|floatformat:2 }}L</p>
+                    <p><strong>Average Daily Production:</strong> {{ avg_production|floatformat:2 }}L</p>
+                    <p><strong>Total Records:</strong> {{ milk_records.count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Production Records</h5>
+            {% if milk_records %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Morning (L)</th>
+                                <th>Evening (L)</th>
+                                <th>Total (L)</th>
+                                <th>Fat Content (%)</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in milk_records %}
+                            <tr>
+                                <td>{{ record.date }}</td>
+                                <td>{{ record.morning_amount }}</td>
+                                <td>{{ record.evening_amount }}</td>
+                                <td>{{ record.total_production }}</td>
+                                <td>{{ record.fat_content|default:'-' }}</td>
+                                <td>{{ record.notes|truncatechars:30|default:'-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No milk production records available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
