@@ -191,6 +191,24 @@ def update_cow(request, tag_number):
     })
 
 @login_required
+def cow_milk_history(request, tag_number):
+    farm = request.user.farm_set.first()
+    cow = get_object_or_404(Cow, farm=farm, tag_number=tag_number)
+    milk_records = cow.milk_records.all().order_by('-date')
+    
+    # Calculate production statistics
+    total_production = sum(record.total_production for record in milk_records)
+    avg_production = total_production / milk_records.count() if milk_records.count() > 0 else 0
+    
+    context = {
+        'cow': cow,
+        'milk_records': milk_records,
+        'total_production': total_production,
+        'avg_production': avg_production,
+    }
+    return render(request, 'farm_management/cow_milk_history.html', context)
+
+@login_required
 def milk_production_list(request):
     farm = request.user.farm_set.first()
     records = MilkProduction.objects.select_related('cow').filter(
