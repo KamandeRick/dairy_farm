@@ -22,6 +22,7 @@ urlpatterns = [
 
     # Veterinary Record URLs
     path('vet-records/', views.vet_record_list, name='vet_record_list'),
+    path('cow/<str:tag_number>/vet-history/', views.cow_vet_history, name='cow_vet_history'),
 
     #Create Forms urls
     path('cow/add/', views.add_cow, name='add_cow'),
