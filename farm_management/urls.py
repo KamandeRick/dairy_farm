@@ -14,6 +14,7 @@ urlpatterns = [
     # Cow URLs
     path('cows/', views.cow_list, name='cow_list'),
     path('cows/<str:tag_number>/', views.cow_detail, name='cow_detail'),
+    path('cow/<str:tag_number>/update/', views.update_cow, name='update_cow'),
 
     # Milk Production URLs
     path('milk-production/', views.milk_production_list, name='milk_production_list'),
