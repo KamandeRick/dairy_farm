@@ -4,9 +4,14 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Cow Details: {{ cow.tag_number }}</h2>
-        <a href="{% url 'farm_management:update_cow' cow.tag_number %}" class="btn btn-primary">
+        <div>
+            <a href="{% url 'farm_management:cow_milk_history' cow.tag_number %}" class="btn btn-info me-2">
+                Full Production History
+            </a>
+            <a href="{% url 'farm_management:update_cow' cow.tag_number %}" class="btn btn-primary">
             Update Details
-        </a>
+            </a>
+        </div>
     </div>
     
     <div class="row">
