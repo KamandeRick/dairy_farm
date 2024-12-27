@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
 
-{% block title %}{% if is_update %}Update Cow: {{ cow.tag_number }}{% else %}Add New Cow{% endblock %}
+{% block title %}
+    {% if is_update %}Update Cow: {{ cow.tag_number }}{% else %}Add New Cow{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
