@@ -225,6 +225,26 @@ def vet_record_list(request):
     return render(request, 'farm_management/vet_record_list.html', {'records': records})
 
 @login_required
+def cow_vet_history(request, tag_number):
+    farm = request.user.farm_set.first()
+    cow = get_object_or_404(Cow, farm=farm, tag_number=tag_number)
+    vet_records = cow.vet_records.all().order_by('-date')
+    
+    # Calculate vet statistics
+    total_cost = sum(record.cost for record in vet_records if record.cost is not None)
+    records_by_type = {}
+    for record in vet_records:
+        records_by_type[record.record_type] = records_by_type.get(record.record_type, 0) + 1
+    
+    context = {
+        'cow': cow,
+        'vet_records': vet_records,
+        'total_cost': total_cost,
+        'records_by_type': records_by_type,
+    }
+    return render(request, 'farm_management/cow_vet_history.html', context)
+
+@login_required
 def add_cow(request):
     farm = request.user.farm_set.first()
     if request.method == 'POST':
