@@ -1,32 +1,79 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ cow.tag_number }} Details{% endblock %}
-
 {% block content %}
-<h2>Cow Details: {{ cow.tag_number }}</h2>
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Basic Information</h5>
-                <p><strong>Name:</strong> {{ cow.name }}</p>
-                <p><strong>Breed:</strong> {{ cow.breed }}</p>
-                <p><strong>Date of Birth:</strong> {{ cow.date_of_birth }}</p>
-                <p><strong>Status:</strong> {{ cow.status }}</p>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Cow Details: {{ cow.tag_number }}</h2>
+        <a href="{% url 'farm_management:update_cow' cow.tag_number %}" class="btn btn-primary">
+            Update Details
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Basic Information</h5>
+                    <p><strong>Name:</strong> {{ cow.name }}</p>
+                    <p><strong>Breed:</strong> {{ cow.breed }}</p>
+                    <p><strong>Date of Birth:</strong> {{ cow.date_of_birth }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {% if cow.status == 'ACTIVE' %}bg-success
+                                         {% elif cow.status == 'DRY' %}bg-warning
+                                         {% elif cow.status == 'SOLD' %}bg-info
+                                         {% else %}bg-secondary{% endif %}">
+                            {{ cow.status }}
+                        </span>
+                    </p>
+                    {% if cow.weight %}
+                        <p><strong>Weight:</strong> {{ cow.weight }} kg</p>
+                    {% endif %}
+                    <p><strong>Current Lactation:</strong> {{ cow.current_lactation }}</p>
+                    {% if cow.notes %}
+                        <p><strong>Notes:</strong> {{ cow.notes }}</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Recent Milk Production</h5>
-                <ul class="list-group">
-                    {% for record in milk_records %}
-                    <li class="list-group-item">
-                        {{ record.date }}: {{ record.total_production }}L
-                    </li>
-                    {% endfor %}
-                </ul>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Milk Production</h5>
+                    {% if milk_records %}
+                        <ul class="list-group">
+                            {% for record in milk_records %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ record.date }}
+                                <span class="badge bg-primary rounded-pill">{{ record.total_production }}L</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No milk production records available.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Veterinary Records</h5>
+                    {% if vet_records %}
+                        <ul class="list-group">
+                            {% for record in vet_records %}
+                            <li class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ record.record_type }}</h6>
+                                    <small>{{ record.date }}</small>
+                                </div>
+                                <p class="mb-1">{{ record.diagnosis }}</p>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No veterinary records available.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
