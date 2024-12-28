@@ -40,19 +40,28 @@
                                 <th>Notes</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {% for record in milk_records %}
-                            <tr>
-                                <td>{{ record.date }}</td>
-                                <td>{{ record.morning_amount }}</td>
-                                <td>{{ record.evening_amount }}</td>
-                                <td>{{ record.total_production }}</td>
-                                <td>{{ record.fat_content|default:'-' }}</td>
-                                <td>{{ record.notes|truncatechars:30|default:'-' }}</td>
-                            </tr>
-                            {% endfor %}
+                        <tbody id="milk-records-table">
+                            {% include 'farm_management/includes/milk_records_table.html' %}
                         </tbody>
                     </table>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="pagination-info">
+                            Page {{ milk_records.number }} of {{ milk_records.paginator.num_pages }}
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="btn btn-sm btn-outline-primary me-2 {% if not milk_records.has_previous %}disabled{% endif %}" 
+                                    onclick="changePage({{ milk_records.number|add:'-1' }})"
+                                    {% if not milk_records.has_previous %}disabled{% endif %}>
+                                Previous
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary {% if not milk_records.has_next %}disabled{% endif %}"
+                                    onclick="changePage({{ milk_records.number|add:'1' }})"
+                                    {% if not milk_records.has_next %}disabled{% endif %}>
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 </div>
             {% else %}
                 <p class="text-muted">No milk production records available.</p>
@@ -60,4 +69,37 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+function changePage(pageNumber) {
+    fetch(`?page=${pageNumber}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update table content
+        document.getElementById('milk-records-table').innerHTML = data.html;
+        
+        // Update pagination controls
+        const prevButton = document.querySelector('.pagination-controls button:first-child');
+        const nextButton = document.querySelector('.pagination-controls button:last-child');
+        const paginationInfo = document.querySelector('.pagination-info');
+        
+        prevButton.disabled = !data.has_previous;
+        prevButton.classList.toggle('disabled', !data.has_previous);
+        prevButton.onclick = () => changePage(data.current_page - 1);
+        
+        nextButton.disabled = !data.has_next;
+        nextButton.classList.toggle('disabled', !data.has_next);
+        nextButton.onclick = () => changePage(data.current_page + 1);
+        
+        paginationInfo.textContent = `Page ${data.current_page} of ${data.total_pages}`;
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}
 {% endblock %}

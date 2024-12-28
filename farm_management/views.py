@@ -205,9 +205,13 @@ def cow_milk_history(request, tag_number):
     avg_production = total_production / milk_records.count() if milk_records.count() > 0 else 0
 
     # Pagination
-    paginator = Paginator(milk_records, 10)  # 10 records per page
+    paginator = Paginator(milk_records, 3)  # 10 records per page
     page_number = request.GET.get('page', 1)
-    page_obj = paginator.get_page(page_number)
+    #page_obj = paginator.get_page(page_number)
+    try:
+        page_obj = paginator.page(page_number)
+    except:
+        page_obj = paginator.page(1)
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # If AJAX request, return only the table content
@@ -228,6 +232,8 @@ def cow_milk_history(request, tag_number):
         'milk_records': milk_records,
         'total_production': total_production,
         'avg_production': avg_production,
+        'total_pages': paginator.num_pages,
+        'current_page': page_obj.number,
     }
     return render(request, 'farm_management/cow_milk_history.html', context)
 
