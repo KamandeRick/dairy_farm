@@ -164,8 +164,8 @@ def cow_list(request):
 def cow_detail(request, tag_number):
     farm = request.user.farm_set.first()
     cow = get_object_or_404(Cow, farm=farm, tag_number=tag_number)
-    milk_records = cow.milk_records.order_by('-date')[:10]
-    vet_records = cow.vet_records.order_by('-date')[:10]
+    milk_records = cow.milk_records.order_by('-date')[:3]
+    vet_records = cow.vet_records.order_by('-date')[:3]
     
     context = {
         'cow': cow,
