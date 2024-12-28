@@ -11,6 +11,10 @@ from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
 import plotly.graph_objects as go
 from plotly.utils import PlotlyJSONEncoder
 import json
+from django.core.paginator import Paginator
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+
 
 def register(request):
     if request.method == 'POST':
@@ -199,6 +203,25 @@ def cow_milk_history(request, tag_number):
     # Calculate production statistics
     total_production = sum(record.total_production for record in milk_records)
     avg_production = total_production / milk_records.count() if milk_records.count() > 0 else 0
+
+    # Pagination
+    paginator = Paginator(milk_records, 10)  # 10 records per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # If AJAX request, return only the table content
+        html = render_to_string(
+            'farm_management/includes/milk_records_table.html',
+            {'milk_records': page_obj}
+        )
+        return JsonResponse({
+            'html': html,
+            'has_next': page_obj.has_next(),
+            'has_previous': page_obj.has_previous(),
+            'current_page': page_obj.number,
+            'total_pages': paginator.num_pages,
+        })
     
     context = {
         'cow': cow,
