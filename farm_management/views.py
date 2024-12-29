@@ -323,7 +323,7 @@ def add_cow(request):
 @login_required
 def add_milk_record(request):
     farm = request.user.farm_set.first()
-    record_type = request.GET.get('type', 'morning')  # Default to morning if not specified
+    record_type = request.GET.get('type', 'morning')
     date = request.GET.get('date', timezone.now().date().isoformat())
     existing_record = None
 
@@ -342,27 +342,40 @@ def add_milk_record(request):
             if existing_record:
                 # Update existing record
                 if record_type == 'morning':
-                    existing_record.morning_amount = record.morning_amount
+                    existing_record.morning_amount = form.cleaned_data['morning_amount']
                 else:
-                    existing_record.evening_amount = record.evening_amount
-                if record.notes:  # Append new notes if provided
-                    existing_record.notes = (existing_record.notes or '') + '\n' + record.notes if existing_record.notes else record.notes
+                    existing_record.evening_amount = form.cleaned_data['evening_amount']
+                
+                # Append new notes if provided
+                if form.cleaned_data.get('notes'):
+                    new_note = f"[{record_type.title()} Update] {form.cleaned_data['notes']}"
+                    if existing_record.notes:
+                        existing_record.notes = f"{existing_record.notes}\n{new_note}"
+                    else:
+                        existing_record.notes = new_note
+                
+                # Update fat content if provided
+                if form.cleaned_data.get('fat_content'):
+                    existing_record.fat_content = form.cleaned_data['fat_content']
+                
                 existing_record.save()
                 messages.success(request, f'{record_type.title()} milk production updated successfully.')
             else:
-                # Create new record
-                if record_type == 'evening':
-                    record.morning_amount = 0
-                else:
+                # Create new record with only morning or evening amount
+                if record_type == 'morning':
                     record.evening_amount = 0
+                else:
+                    record.morning_amount = 0
                 record.save()
                 messages.success(request, f'{record_type.title()} milk production recorded successfully.')
             
+            # Redirect to the list view after successful save
             return redirect('farm_management:milk_production_list')
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
-        # Check for existing record on this date
+        # For GET requests
         initial_data = {'date': date}
-        existing_record = None
         
         if 'cow' in request.GET:
             cow = get_object_or_404(Cow, farm=farm, tag_number=request.GET['cow'])
@@ -373,14 +386,21 @@ def add_milk_record(request):
             ).first()
 
         form = MilkProductionForm(initial=initial_data)
-        # Filter cow choices to only show farm's cows
         form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
         
         # Hide the irrelevant amount field
         if record_type == 'morning':
             form.fields['evening_amount'].widget = forms.HiddenInput()
+            if existing_record:
+                form.initial['morning_amount'] = existing_record.morning_amount
         else:
             form.fields['morning_amount'].widget = forms.HiddenInput()
+            if existing_record:
+                form.initial['evening_amount'] = existing_record.evening_amount
+
+        # Set other existing values if record exists
+        if existing_record:
+            form.initial['fat_content'] = existing_record.fat_content
 
     context = {
         'form': form,
@@ -388,7 +408,7 @@ def add_milk_record(request):
         'existing_record': existing_record,
         'date': date,
     }
-    return render(request, 'farm_management/milk_production_form.html', {'form': form})
+    return render(request, 'farm_management/milk_production_form.html', context)
 
 @login_required
 def add_vet_record(request):
