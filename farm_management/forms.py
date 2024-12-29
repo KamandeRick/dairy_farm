@@ -18,6 +18,7 @@ class MilkProductionForm(forms.ModelForm):
         self.fields['morning_amount'].required = False
         self.fields['evening_amount'].required = False
         self.fields['fat_content'].required = False
+        self.fields['notes'].required = False
 
 
 class VeterinaryRecordForm(forms.ModelForm):

@@ -322,59 +322,85 @@ def add_cow(request):
 
 @login_required
 def add_milk_record(request):
+    print("\n=== Starting add_milk_record view ===")
     farm = request.user.farm_set.first()
-    record_type = request.GET.get('type', 'morning')
-    date = request.GET.get('date', timezone.now().date().isoformat())
-    existing_record = None
+    record_type = request.POST.get('type') or request.GET.get('type', 'morning')
+    date = request.POST.get('date') or request.GET.get('date', timezone.now().date().isoformat())
+    existing_record = None  # Initialize here, outside of both POST and GET blocks
 
     if request.method == 'POST':
+        print("\n--- Processing POST request ---")
         form = MilkProductionForm(request.POST)
+        print(f"Form data: {request.POST}")
+        print(f"Form is valid: {form.is_valid()}")
+        
+        if not form.is_valid():
+            print(f"Form errors: {form.errors}")
+        
         if form.is_valid():
+            print("\nForm is valid, processing...")
             record = form.save(commit=False)
             record.recorded_by = request.user
             
-            # Check if a record already exists for this cow and date
-            existing_record = MilkProduction.objects.filter(
-                cow=record.cow,
-                date=record.date
-            ).first()
-            
-            if existing_record:
-                # Update existing record
-                if record_type == 'morning':
-                    existing_record.morning_amount = form.cleaned_data['morning_amount']
-                else:
-                    existing_record.evening_amount = form.cleaned_data['evening_amount']
+            try:
+                # Check for existing record
+                existing_record = MilkProduction.objects.filter(
+                    cow=record.cow,
+                    date=record.date
+                ).first()
                 
-                # Append new notes if provided
-                if form.cleaned_data.get('notes'):
-                    new_note = f"[{record_type.title()} Update] {form.cleaned_data['notes']}"
-                    if existing_record.notes:
-                        existing_record.notes = f"{existing_record.notes}\n{new_note}"
+                print(f"Existing record found: {existing_record is not None}")
+                
+                if existing_record:
+                    print(f"Updating existing record ID: {existing_record.id}")
+                    print(f"Current values - Morning: {existing_record.morning_amount}, Evening: {existing_record.evening_amount}")
+                    
+                    # Store the other amount before updating
+                    if record_type == 'morning':
+                        # Keep existing evening amount
+                        existing_evening = existing_record.evening_amount
+                        existing_record.morning_amount = form.cleaned_data['morning_amount']
+                        existing_record.evening_amount = existing_evening
+                        print(f"Updated morning amount to: {existing_record.morning_amount}")
                     else:
-                        existing_record.notes = new_note
-                
-                # Update fat content if provided
-                if form.cleaned_data.get('fat_content'):
-                    existing_record.fat_content = form.cleaned_data['fat_content']
-                
-                existing_record.save()
-                messages.success(request, f'{record_type.title()} milk production updated successfully.')
-            else:
-                # Create new record with only morning or evening amount
-                if record_type == 'morning':
-                    record.evening_amount = 0
+                        # Keep existing morning amount
+                        existing_morning = existing_record.morning_amount
+                        existing_record.evening_amount = form.cleaned_data['evening_amount']
+                        existing_record.morning_amount = existing_morning
+                        print(f"Updated evening amount to: {existing_record.evening_amount}")
+                    
+                    if form.cleaned_data.get('fat_content'):
+                        existing_record.fat_content = form.cleaned_data['fat_content']
+                    
+                    if form.cleaned_data.get('notes'):
+                        new_note = f"[{record_type.title()} Update] {form.cleaned_data['notes']}"
+                        existing_record.notes = new_note if not existing_record.notes else f"{existing_record.notes}\n{new_note}"
+                    
+                    existing_record.save()
+                    print("Successfully saved existing record")
+                    
                 else:
-                    record.morning_amount = 0
-                record.save()
-                messages.success(request, f'{record_type.title()} milk production recorded successfully.')
-            
-            # Redirect to the list view after successful save
-            return redirect('farm_management:milk_production_list')
-        else:
-            messages.error(request, "Please correct the errors below.")
+                    print("\nCreating new record")
+                    if record_type == 'morning':
+                        record.morning_amount = form.cleaned_data['morning_amount']
+                        record.evening_amount = None
+                    else:
+                        record.evening_amount = form.cleaned_data['evening_amount']
+                        record.morning_amount = None
+                    
+                    record.save()
+                    print(f"Created new record with ID: {record.id}")
+                
+                messages.success(request, f'{record_type.title()} milk production {"updated" if existing_record else "recorded"} successfully.')
+                print("\nRedirecting to milk_production_list")
+                return redirect('farm_management:milk_production_list')
+                
+            except Exception as e:
+                print(f"\nError occurred: {str(e)}")
+                messages.error(request, f"Error saving record: {str(e)}")
+    
     else:
-        # For GET requests
+        print("\n--- Processing GET request ---")
         initial_data = {'date': date}
         
         if 'cow' in request.GET:
@@ -384,23 +410,29 @@ def add_milk_record(request):
                 cow=cow,
                 date=date
             ).first()
+            print(f"Found existing record for cow: {existing_record is not None}")
 
         form = MilkProductionForm(initial=initial_data)
         form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
         
-        # Hide the irrelevant amount field
         if record_type == 'morning':
             form.fields['evening_amount'].widget = forms.HiddenInput()
+            form.fields['evening_amount'].required = False
             if existing_record:
-                form.initial['morning_amount'] = existing_record.morning_amount
+                form.initial.update({
+                    'morning_amount': existing_record.morning_amount,
+                    'fat_content': existing_record.fat_content,
+                    'notes': existing_record.notes
+                })
         else:
             form.fields['morning_amount'].widget = forms.HiddenInput()
+            form.fields['morning_amount'].required = False
             if existing_record:
-                form.initial['evening_amount'] = existing_record.evening_amount
-
-        # Set other existing values if record exists
-        if existing_record:
-            form.initial['fat_content'] = existing_record.fat_content
+                form.initial.update({
+                    'evening_amount': existing_record.evening_amount,
+                    'fat_content': existing_record.fat_content,
+                    'notes': existing_record.notes
+                })
 
     context = {
         'form': form,
@@ -408,6 +440,11 @@ def add_milk_record(request):
         'existing_record': existing_record,
         'date': date,
     }
+    
+    print("\n--- Rendering template ---")
+    print(f"Context: record_type={record_type}, date={date}, existing_record={existing_record is not None}")
+    print("=== End of view processing ===\n")
+    
     return render(request, 'farm_management/milk_production_form.html', context)
 
 @login_required
