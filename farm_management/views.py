@@ -241,10 +241,36 @@ def cow_milk_history(request, tag_number):
 @login_required
 def milk_production_list(request):
     farm = request.user.farm_set.first()
-    records = MilkProduction.objects.select_related('cow').filter(
+    records_list = MilkProduction.objects.select_related('cow').filter(
         cow__farm=farm
     ).order_by('-date')
-    return render(request, 'farm_management/milk_production_list.html', {'records': records})
+    
+    # Pagination
+    paginator = Paginator(records_list, 10)  # Show 10 records per page
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        records = paginator.page(page_number)
+    except:
+        records = paginator.page(1)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_to_string(
+            'farm_management/includes/milk_records_table_rows.html',
+            {'records': records}
+        )
+        return JsonResponse({
+            'html': html,
+            'has_next': records.has_next(),
+            'has_previous': records.has_previous(),
+            'current_page': records.number,
+            'total_pages': paginator.num_pages,
+        })
+    
+    context = {
+        'records': records,
+    }
+    return render(request, 'farm_management/milk_production_list.html', context)
 
 @login_required
 def vet_record_list(request):
