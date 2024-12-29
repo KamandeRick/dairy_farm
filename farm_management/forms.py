@@ -6,21 +6,6 @@ class CowForm(forms.ModelForm):
         model = Cow
         fields = ['tag_number', 'name', 'breed', 'date_of_birth', 'status', 'weight', 'current_lactation']
 
-class MilkProductionForm(forms.ModelForm):
-    class Meta:
-        model = MilkProduction
-        fields = ['cow', 'date', 'morning_amount', 'evening_amount', 'fat_content', 'notes']
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'})
-        }
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['morning_amount'].required = False
-        self.fields['evening_amount'].required = False
-        self.fields['fat_content'].required = False
-        self.fields['notes'].required = False
-
-
 class VeterinaryRecordForm(forms.ModelForm):
     class Meta:
         model = VeterinaryRecord
@@ -29,3 +14,33 @@ class VeterinaryRecordForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date'}),
             'next_visit_date': forms.DateInput(attrs={'type': 'date'})
         }
+
+class MilkProductionForm(forms.ModelForm):
+    class Meta:
+        model = MilkProduction
+        fields = ['cow', 'date', 'morning_amount', 'evening_amount', 'fat_content', 'notes']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['morning_amount'].required = False
+        self.fields['evening_amount'].required = False
+        self.fields['fat_content'].required = False
+        self.fields['notes'].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Allow updating existing records
+        if hasattr(self, 'instance') and self.instance.pk:
+            return cleaned_data
+            
+        # Check for existing record
+        cow = cleaned_data.get('cow')
+        date = cleaned_data.get('date')
+        if cow and date:
+            existing = MilkProduction.objects.filter(cow=cow, date=date).first()
+            if existing:
+                self.instance = existing
+        return cleaned_data
