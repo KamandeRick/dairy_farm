@@ -1,0 +1,10 @@
+{% for record in records %}
+<tr>
+    <td>{{ record.date }}</td>
+    <td>{{ record.cow.tag_number }}</td>
+    <td>{{ record.morning_amount }}</td>
+    <td>{{ record.evening_amount }}</td>
+    <td>{{ record.total_production }}</td>
+    <td>{{ record.fat_content|default:"-" }}</td>
+</tr>
+{% endfor %}
