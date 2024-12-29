@@ -32,40 +32,12 @@
             {% endif %}
 
             {% if existing_record %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Existing Record for {{ existing_record.date }}</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Morning:</strong> 
-                                {% if existing_record.morning_amount %}
-                                    {{ existing_record.morning_amount }}L
-                                {% else %}
-                                    Not recorded
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Evening:</strong> 
-                                {% if existing_record.evening_amount %}
-                                    {{ existing_record.evening_amount }}L
-                                {% else %}
-                                    Not recorded
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    {% if existing_record.notes %}
-                    <div class="mt-2">
-                        <strong>Notes:</strong>
-                        <pre class="form-control">{{ existing_record.notes }}</pre>
-                    </div>
-                    {% endif %}
-                </div>
+            <div class="alert alert-info">
+                Updating existing record for {{ existing_record.date }}
             </div>
             {% endif %}
 
-            <form method="post">
+            <form method="post" action="{% url 'farm_management:add_milk_record' %}">
                 {% csrf_token %}
                 <input type="hidden" name="type" value="{{ record_type }}">
                 <input type="hidden" name="date" value="{{ date }}">
