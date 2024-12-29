@@ -69,14 +69,18 @@ class MilkProduction(models.Model):
     morning_amount = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(0)],
+        null=True,  # Allow null for evening-only records
+        blank=True  # Allow blank in forms
     )
     
     # Evening Production
     evening_amount = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(0)],
+        null=True,  # Allow null for morning-only records
+        blank=True  # Allow blank in forms
     )
     
     # Quality Metrics
@@ -92,7 +96,9 @@ class MilkProduction(models.Model):
 
     @property
     def total_production(self):
-        return self.morning_amount + self.evening_amount
+        morning = self.morning_amount or 0
+        evening = self.evening_amount or 0
+        return morning + evening
 
     def __str__(self):
         return f"{self.cow.tag_number} - {self.date}"
