@@ -158,8 +158,40 @@ def dashboard(request):
 @login_required
 def cow_list(request):
     farm = request.user.farm_set.first()
-    cows = Cow.objects.filter(farm=farm)
-    return render(request, 'farm_management/cow_list.html', {'cows': cows})
+    cows = Cow.objects.filter(farm=farm).order_by('tag_number')
+    
+    # Pagination
+    paginator = Paginator(cows, 10)  # Show 10 records per page
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        cows = paginator.page(page_number)
+    except:
+        cows = paginator.page(1)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_to_string(
+            'farm_management/includes/cow_table_rows.html',
+            {'cows': cows}
+        )
+        return JsonResponse({
+            'html': html,
+            'has_next': records_list.has_next(),
+            'has_previous': records_list.has_previous(),
+            'current_page': records_list.number,
+            'total_pages': paginator.num_pages,
+        })
+    
+    context = {
+        'cows': cows,
+        'total_pages': paginator.num_pages,
+        'current_page': cows.number,
+        'has_previous': cows.has_previous(),
+        'has_next': cows.has_next(),
+        'previous_page_number': cows.previous_page_number if cows.has_previous() else 1,
+        'next_page_number': cows.next_page_number if cows.has_next() else paginator.num_pages,
+    }
+    return render(request, 'farm_management/cow_list.html', context)
 
 @login_required
 def cow_detail(request, tag_number):
