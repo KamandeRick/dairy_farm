@@ -290,21 +290,70 @@ def add_cow(request):
 @login_required
 def add_milk_record(request):
     farm = request.user.farm_set.first()
+    record_type = request.GET.get('type', 'morning')  # Default to morning if not specified
+    date = request.GET.get('date', timezone.now().date().isoformat())
+
     if request.method == 'POST':
         form = MilkProductionForm(request.POST)
         if form.is_valid():
             record = form.save(commit=False)
             record.recorded_by = request.user
-            # Verify the cow belongs to the user's farm
-            if record.cow.farm != farm:
-                messages.error(request, "Invalid cow selection.")
-                return render(request, 'farm_management/milk_production_form.html', {'form': form})
-            record.save()
+            
+            # Check if a record already exists for this cow and date
+            existing_record = MilkProduction.objects.filter(
+                cow=record.cow,
+                date=record.date
+            ).first()
+            
+            if existing_record:
+                # Update existing record
+                if record_type == 'morning':
+                    existing_record.morning_amount = record.morning_amount
+                else:
+                    existing_record.evening_amount = record.evening_amount
+                if record.notes:  # Append new notes if provided
+                    existing_record.notes = (existing_record.notes or '') + '\n' + record.notes if existing_record.notes else record.notes
+                existing_record.save()
+                messages.success(request, f'{record_type.title()} milk production updated successfully.')
+            else:
+                # Create new record
+                if record_type == 'evening':
+                    record.morning_amount = 0
+                else:
+                    record.evening_amount = 0
+                record.save()
+                messages.success(request, f'{record_type.title()} milk production recorded successfully.')
+            
             return redirect('farm_management:milk_production_list')
     else:
-        form = MilkProductionForm()
+        # Check for existing record on this date
+        initial_data = {'date': date}
+        existing_record = None
+        
+        if 'cow' in request.GET:
+            cow = get_object_or_404(Cow, farm=farm, tag_number=request.GET['cow'])
+            initial_data['cow'] = cow
+            existing_record = MilkProduction.objects.filter(
+                cow=cow,
+                date=date
+            ).first()
+
+        form = MilkProductionForm(initial=initial_data)
         # Filter cow choices to only show farm's cows
         form.fields['cow'].queryset = Cow.objects.filter(farm=farm)
+        
+        # Hide the irrelevant amount field
+        if record_type == 'morning':
+            form.fields['evening_amount'].widget = forms.HiddenInput()
+        else:
+            form.fields['morning_amount'].widget = forms.HiddenInput()
+
+    context = {
+        'form': form,
+        'record_type': record_type,
+        'existing_record': existing_record,
+        'date': date,
+    }
     return render(request, 'farm_management/milk_production_form.html', {'form': form})
 
 @login_required
