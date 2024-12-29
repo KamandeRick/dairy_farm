@@ -24,7 +24,7 @@
                         </tr>
                     </thead>
                     <tbody id="cow-records-table">
-                        {% include 'farm_management/includes/cow_table_rows.html' with records_list=records_list %}
+                        {% include 'farm_management/includes/cow_table_rows.html' with cows=cows %}
                     </tbody>
                 </table>
 
@@ -33,16 +33,16 @@
                         Page {{ current_page }} of {{ total_pages }}
                     </div>
                     <div class="pagination-controls">
-                        <button class="btn btn-sm btn-outline-primary me-2 {% if not records_list.has_previous %}disabled{% endif %}" 
+                        <button class="btn btn-sm btn-outline-primary me-2 {% if not cows.has_previous %}disabled{% endif %}" 
                                 id="prev-button"
                                 onclick="changePage({{ current_page|add:'-1' }})"
-                                {% if not records_list.has_previous %}disabled{% endif %}>
+                                {% if not cows.has_previous %}disabled{% endif %}>
                             Previous
                         </button>
-                        <button class="btn btn-sm btn-outline-primary {% if not records_list.has_next %}disabled{% endif %}"
+                        <button class="btn btn-sm btn-outline-primary {% if not cows.has_next %}disabled{% endif %}"
                                 id="next-button"
                                 onclick="changePage({{ current_page|add:'1' }})"
-                                {% if not records_list.has_next %}disabled{% endif %}>
+                                {% if not cows.has_next %}disabled{% endif %}>
                             Next
                         </button>
                     </div>
