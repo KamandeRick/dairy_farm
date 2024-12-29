@@ -1,35 +1,87 @@
 {% extends 'base.html' %}
-
 {% block title %}Cows{% endblock %}
 
 {% block content %}
-<h2>Cow List</h2>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Cow List</h2>
+        <div>
+            <a href="{% url 'farm_management:add_cow' %}" class="btn btn-primary">Add New Cow</a>
+        </div>
+    </div>
 
-<a href="{% url 'farm_management:add_cow' %}" class="btn btn-primary mb-3">Add New Cow</a>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Tag Number</th>
+                            <th>Name</th>
+                            <th>Breed</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cow-records-table">
+                        {% include 'farm_management/includes/cow_table_rows.html' with records_list=records_list %}
+                    </tbody>
+                </table>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Tag Number</th>
-            <th>Name</th>
-            <th>Breed</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for cow in cows %}
-        <tr>
-            <td>{{ cow.tag_number }}</td>
-            <td>{{ cow.name }}</td>
-            <td>{{ cow.breed }}</td>
-            <td>{{ cow.status }}</td>
-            <td>
-                <a href="{% url 'farm_management:cow_detail' cow.tag_number %}" 
-                   class="btn btn-sm btn-primary">View</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="pagination-info">
+                        Page {{ current_page }} of {{ total_pages }}
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-outline-primary me-2 {% if not records_list.has_previous %}disabled{% endif %}" 
+                                id="prev-button"
+                                onclick="changePage({{ current_page|add:'-1' }})"
+                                {% if not records_list.has_previous %}disabled{% endif %}>
+                            Previous
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary {% if not records_list.has_next %}disabled{% endif %}"
+                                id="next-button"
+                                onclick="changePage({{ current_page|add:'1' }})"
+                                {% if not records_list.has_next %}disabled{% endif %}>
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function changePage(pageNumber) {
+    fetch(`?page=${pageNumber}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update table content
+        document.getElementById('cow-records-table').innerHTML = data.html;
+        
+        // Update pagination controls
+        const prevButton = document.querySelector('.pagination-controls button:first-child');
+        const nextButton = document.querySelector('.pagination-controls button:last-child');
+        const paginationInfo = document.querySelector('.pagination-info');
+        
+        prevButton.disabled = !data.has_previous;
+        prevButton.classList.toggle('disabled', !data.has_previous);
+        prevButton.onclick = () => changePage(data.current_page - 1);
+        
+        nextButton.disabled = !data.has_next;
+        nextButton.classList.toggle('disabled', !data.has_next);
+        nextButton.onclick = () => changePage(data.current_page + 1);
+        
+        paginationInfo.textContent = `Page ${data.current_page} of ${data.total_pages}`;
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endblock %}
 {% endblock %}
