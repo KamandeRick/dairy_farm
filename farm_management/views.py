@@ -250,25 +250,31 @@ def milk_production_list(request):
     page_number = request.GET.get('page', 1)
     
     try:
-        records = paginator.page(page_number)
+        records_list = paginator.page(page_number)
     except:
-        records = paginator.page(1)
+        records_list = paginator.page(1)
     
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         html = render_to_string(
             'farm_management/includes/milk_records_table_rows.html',
-            {'records': records}
+            {'records_list': records_list}
         )
         return JsonResponse({
             'html': html,
-            'has_next': records.has_next(),
-            'has_previous': records.has_previous(),
-            'current_page': records.number,
+            'has_next': records_list.has_next(),
+            'has_previous': records_list.has_previous(),
+            'current_page': records_list.number,
             'total_pages': paginator.num_pages,
         })
     
     context = {
-        'records': records,
+        'records_list': records_list,
+        'total_pages': paginator.num_pages,
+        'current_page': records_list.number,
+        'has_previous': records_list.has_previous(),
+        'has_next': records_list.has_next(),
+        'previous_page_number': records_list.previous_page_number if records_list.has_previous() else 1,
+        'next_page_number': records_list.next_page_number if records_list.has_next() else paginator.num_pages,
     }
     return render(request, 'farm_management/milk_production_list.html', context)
 
