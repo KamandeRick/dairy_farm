@@ -176,9 +176,9 @@ def cow_list(request):
         )
         return JsonResponse({
             'html': html,
-            'has_next': records_list.has_next(),
-            'has_previous': records_list.has_previous(),
-            'current_page': records_list.number,
+            'has_next': cows.has_next(),
+            'has_previous': cows.has_previous(),
+            'current_page': cows.number,
             'total_pages': paginator.num_pages,
         })
     
@@ -278,7 +278,7 @@ def milk_production_list(request):
     ).order_by('-date')
     
     # Pagination
-    paginator = Paginator(records_list, 10)  # Show 10 records per page
+    paginator = Paginator(records_list, 2)  # Show 10 records per page
     page_number = request.GET.get('page', 1)
     
     try:
