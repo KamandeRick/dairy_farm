@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Sum, Max
 from django.utils import timezone
+from django import forms
 from datetime import timedelta
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
@@ -292,6 +293,7 @@ def add_milk_record(request):
     farm = request.user.farm_set.first()
     record_type = request.GET.get('type', 'morning')  # Default to morning if not specified
     date = request.GET.get('date', timezone.now().date().isoformat())
+    existing_record = None
 
     if request.method == 'POST':
         form = MilkProductionForm(request.POST)
