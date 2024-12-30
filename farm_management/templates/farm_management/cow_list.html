@@ -10,6 +10,51 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="filter-form" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if value == current_status %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="breed" class="form-label">Breed</label>
+                    <select name="breed" id="breed" class="form-select">
+                        <option value="">All Breeds</option>
+                        {% for breed_value in breeds %}
+                            <option value="{{ breed_value }}" {% if breed_value == current_breed %}selected{% endif %}>
+                                {{ breed_value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="sort_dob" class="form-label">Sort by Date of Birth</label>
+                    <select name="sort_dob" id="sort_dob" class="form-select">
+                        <option value="">Default Sort</option>
+                        <option value="date_of_birth" {% if current_sort_dob == 'date_of_birth' %}selected{% endif %}>
+                            Oldest First
+                        </option>
+                        <option value="-date_of_birth" {% if current_sort_dob == '-date_of_birth' %}selected{% endif %}>
+                            Newest First
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -20,6 +65,7 @@
                             <th>Name</th>
                             <th>Breed</th>
                             <th>Status</th>
+                            <th>Date of Birth</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -54,18 +100,34 @@
 
 {% block extra_js %}
 <script>
+function getFilteredURL(pageNumber = null) {
+    const form = document.getElementById('filter-form');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    if (pageNumber) {
+        params.set('page', pageNumber);
+    }
+    return `?${params.toString()}`;
+}
+
+function resetFilters() {
+    document.getElementById('status').value = '';
+    document.getElementById('breed').value = '';
+    document.getElementById('sort_dob').value = '';
+    document.getElementById('filter-form').submit();
+}
+
 function changePage(pageNumber) {
-    fetch(`?page=${pageNumber}`, {
+    const url = getFilteredURL(pageNumber);
+    fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => response.json())
     .then(data => {
-        // Update table content
         document.getElementById('cow-records-table').innerHTML = data.html;
         
-        // Update pagination controls
         const prevButton = document.querySelector('.pagination-controls button:first-child');
         const nextButton = document.querySelector('.pagination-controls button:last-child');
         const paginationInfo = document.querySelector('.pagination-info');
@@ -79,9 +141,44 @@ function changePage(pageNumber) {
         nextButton.onclick = () => changePage(data.current_page + 1);
         
         paginationInfo.textContent = `Page ${data.current_page} of ${data.total_pages}`;
+        
+        // Update URL without refresh
+        history.pushState({}, '', url);
     })
     .catch(error => console.error('Error:', error));
 }
+
+// Handle form submission
+document.getElementById('filter-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const url = getFilteredURL();
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('cow-records-table').innerHTML = data.html;
+        
+        const paginationInfo = document.querySelector('.pagination-info');
+        paginationInfo.textContent = `Page ${data.current_page} of ${data.total_pages}`;
+        
+        // Update pagination buttons state
+        const prevButton = document.querySelector('.pagination-controls button:first-child');
+        const nextButton = document.querySelector('.pagination-controls button:last-child');
+        
+        prevButton.disabled = !data.has_previous;
+        prevButton.classList.toggle('disabled', !data.has_previous);
+        
+        nextButton.disabled = !data.has_next;
+        nextButton.classList.toggle('disabled', !data.has_next);
+        
+        // Update URL without refresh
+        history.pushState({}, '', url);
+    })
+    .catch(error => console.error('Error:', error));
+});
 </script>
 {% endblock %}
 {% endblock %}
