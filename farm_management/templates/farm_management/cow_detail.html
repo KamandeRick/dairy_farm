@@ -40,6 +40,24 @@
                     {% if cow.notes %}
                         <p><strong>Notes:</strong> {{ cow.notes }}</p>
                     {% endif %}
+                    {% if cow.paternal_ancestry %}
+                        <p><strong>Paternal Ancestry:</strong> {{ cow.paternal_ancestry }} </p>
+                    {% endif %}
+                    {% if cow.maternal_ancestry %}
+                        <p><strong>Maternal Ancestry:</strong> {{ cow.maternal_ancestry }} </p>
+                    {% endif %}
+                    {% if cow.acquired_from %}
+                        <p><strong>Acquired from:</strong> {{ cow.acquired_from }} </p>
+                    {% endif %}
+                    {% if cow.sold_to %}
+                        <p><strong>Sold to:</strong> {{ cow.sold_to }} </p>
+                    {% endif %}
+                    {% if cow.cause_of_death %}
+                        <p><strong>Cause of Death:</strong> {{ cow.cause_of_death }} </p>
+                    {% endif %}
+                    {% if cow.date_of_death %}
+                        <p><strong>Date of Death:</strong> {{ cow.date_of_death }} </p>
+                    {% endif %}
                 </div>
             </div>
         </div>
