@@ -47,7 +47,7 @@ class Cow(models.Model):
     date_of_birth = models.DateField()
     date_acquired = models.DateField(default=timezone.now)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
-    paternal_ancestry = models.CharField(max_length=100, blank=True)
+    paternal_ancestry = models.CharField(max_length=100, null=True, blank=True)
     maternal_ancestry = models.CharField(max_length=100, null=True, blank=True)
     acquired_from = models.CharField(max_length=100, null=True, blank=True)
     sold_to = models.CharField(max_length=100, null=True, blank=True)
