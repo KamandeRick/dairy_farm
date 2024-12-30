@@ -313,10 +313,42 @@ def milk_production_list(request):
 @login_required
 def vet_record_list(request):
     farm = request.user.farm_set.first()
-    records = VeterinaryRecord.objects.select_related('cow').filter(
+    records_list = VeterinaryRecord.objects.select_related('cow').filter(
         cow__farm=farm
     ).order_by('-date')
-    return render(request, 'farm_management/vet_record_list.html', {'records': records})
+    
+    # Pagination
+    paginator = Paginator(records_list, 15)  # Show 15 records per page
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        records_list = paginator.page(page_number)
+    except:
+        records_list = paginator.page(1)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_to_string(
+            'farm_management/includes/vet_records_table_rows.html',
+            {'records_list': records_list}
+        )
+        return JsonResponse({
+            'html': html,
+            'has_next': records_list.has_next(),
+            'has_previous': records_list.has_previous(),
+            'current_page': records_list.number,
+            'total_pages': paginator.num_pages,
+        })
+    
+    context = {
+        'records_list': records_list,
+        'total_pages': paginator.num_pages,
+        'current_page': records_list.number,
+        'has_previous': records_list.has_previous(),
+        'has_next': records_list.has_next(),
+        'previous_page_number': records_list.previous_page_number if records_list.has_previous() else 1,
+        'next_page_number': records_list.next_page_number if records_list.has_next() else paginator.num_pages,
+    }
+    return render(request, 'farm_management/vet_record_list.html', context)
 
 @login_required
 def cow_vet_history(request, tag_number):
