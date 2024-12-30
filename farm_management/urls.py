@@ -6,10 +6,10 @@ from . import views
 app_name = 'farm_management'
 urlpatterns = [
     #Home page
-    # path('', views.index, name='index'),
+    path('', views.index, name='index'),
 
     # Dashboard
-    path('', views.dashboard, name='dashboard'),
+    path('dashboard/', views.dashboard, name='dashboard'),
 
     # Cow URLs
     path('cows/', views.cow_list, name='cow_list'),
