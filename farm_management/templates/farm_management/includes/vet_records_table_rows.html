@@ -1,0 +1,14 @@
+{% for record in records_list %}
+<tr>
+    <td>{{ record.date }}</td>
+    <td>{{ record.cow.tag_number }}</td>
+    <td>{{ record.get_record_type_display }}</td>
+    <td>{{ record.veterinarian }}</td>
+    <td>{{ record.diagnosis|truncatechars:50 }}</td>
+    <td>{{ record.next_visit_date|default:"-" }}</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center">No veterinary records found.</td>
+</tr>
+{% endfor %}
