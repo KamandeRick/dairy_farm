@@ -1,6 +1,14 @@
-{% extends 'farm_management/base.html' %}
-
+{% extends 'base.html' %}
 
 {% block content %}
-  <p>Effortless Dairy Farm Management: Streamline operations, monitor livestock, and optimize productivity with ease</p>
-{% endblock content %}
+<div class="container min-vh-100 d-flex align-items-center">
+    <div class="text-center mx-auto px-4" style="max-width: 800px;">
+        <h1 class="display-4 mb-4">Smart Dairy Farm Management</h1>
+        <p class="lead mb-5">Transform your dairy farm operations with our comprehensive management system. Track milk production, monitor herd health, and make data-driven decisions.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'farm_management:register' %}" class="btn btn-primary btn-lg">Get Started</a>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
