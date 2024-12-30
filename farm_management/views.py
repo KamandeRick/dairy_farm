@@ -158,7 +158,29 @@ def dashboard(request):
 @login_required
 def cow_list(request):
     farm = request.user.farm_set.first()
-    cows = Cow.objects.filter(farm=farm).order_by('tag_number')
+    cows = Cow.objects.filter(farm=farm)
+    
+    # Get filter parameters
+    status = request.GET.get('status', '')
+    breed = request.GET.get('breed', '')
+    sort_dob = request.GET.get('sort_dob', '')  # Default to no sorting
+    
+    # Apply filters
+    if status:
+        cows = cows.filter(status=status)
+    if breed:
+        cows = cows.filter(breed=breed)
+    
+    # Apply sorting
+    if sort_dob:
+        cows = cows.order_by(sort_dob)
+    else:
+        cows = cows.order_by('tag_number')  # Default sorting
+    
+    # Get unique breeds for the filter dropdown
+    breeds = Cow.objects.filter(
+        farm=farm
+    ).values_list('breed', flat=True).distinct()
     
     # Pagination
     paginator = Paginator(cows, 10)  # Show 10 records per page
@@ -186,12 +208,14 @@ def cow_list(request):
         'cows': cows,
         'total_pages': paginator.num_pages,
         'current_page': cows.number,
-        'has_previous': cows.has_previous(),
-        'has_next': cows.has_next(),
-        'previous_page_number': cows.previous_page_number if cows.has_previous() else 1,
-        'next_page_number': cows.next_page_number if cows.has_next() else paginator.num_pages,
+        'breeds': breeds,
+        'status_choices': Cow.STATUS_CHOICES,
+        'current_status': status,
+        'current_breed': breed,
+        'current_sort_dob': sort_dob,
     }
     return render(request, 'farm_management/cow_list.html', context)
+
 
 @login_required
 def cow_detail(request, tag_number):
