@@ -17,6 +17,11 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 
 
+def index(request):
+    if request.user.is_authenticated:
+        return redirect('farm_management:dashboard')
+    return render(request, 'farm_management/index.html')
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
