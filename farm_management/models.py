@@ -47,6 +47,12 @@ class Cow(models.Model):
     date_of_birth = models.DateField()
     date_acquired = models.DateField(default=timezone.now)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
+    paternal_ancestry = models.CharField(max_length=100, blank=True)
+    maternal_ancestry = models.CharField(max_length=100, null=True, blank=True)
+    acquired_from = models.CharField(max_length=100, null=True, blank=True)
+    sold_to = models.CharField(max_length=100, null=True, blank=True)
+    cause_of_death = models.CharField(max_length=100, null=True, blank=True)
+    date_of_death = models.DateField(null=True, blank=True)
     
     # Additional Details
     weight = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
