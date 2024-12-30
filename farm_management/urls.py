@@ -23,7 +23,7 @@ urlpatterns = [
     # Veterinary Record URLs
     path('vet-records/', views.vet_record_list, name='vet_record_list'),
     path('cow/<str:tag_number>/vet-history/', views.cow_vet_history, name='cow_vet_history'),
-
+    path('vet-records/<int:record_id>/', views.vet_record_detail, name='vet_record_detail'), 
     #Create Forms urls
     path('cow/add/', views.add_cow, name='add_cow'),
     path('milk-production/add/', views.add_milk_record, name='add_milk_record'),
