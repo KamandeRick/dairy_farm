@@ -4,7 +4,7 @@ from .models import Cow, MilkProduction, VeterinaryRecord
 class CowForm(forms.ModelForm):
     class Meta:
         model = Cow
-        fields = ['tag_number', 'name', 'breed', 'date_of_birth', 'status', 'weight', 'current_lactation']
+        fields = ['tag_number', 'name', 'breed', 'date_of_birth', 'status', 'weight', 'current_lactation', 'paternal_ancestry', 'maternal_ancestry', 'acquired_from', 'sold_to', 'cause_of_death', 'date_of_death']
 
 class VeterinaryRecordForm(forms.ModelForm):
     class Meta:
