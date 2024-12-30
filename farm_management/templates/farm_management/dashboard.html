@@ -28,16 +28,39 @@
         </div>
     </div>
 
-    <!-- Best Producer -->
+    <!-- Today's Best Producer -->
     <div class="col-md-3">
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Today's Best Producer</h5>
                 {% if today_best %}
-                    <p class="mb-1">{{ today_best.cow.name }} ({{ today_best.cow.tag_number }})</p>
+                    <p class="mb-1">
+                        <a href="{% url 'farm_management:cow_detail' today_best.cow.tag_number %}" class="text-decoration-none">
+                            {{ today_best.cow.name }} ({{ today_best.cow.tag_number }})
+                        </a>
+                    </p>
                     <h4 class="text-success">{{ today_best.daily_total|floatformat:2 }} L</h4>
                 {% else %}
                     <p class="text-muted">No production recorded today</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Best Producer -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Overall Best Producer</h5>
+                {% if overall_best %}
+                    <p class="mb-1">
+                        <a href="{% url 'farm_management:cow_detail' overall_best.cow.tag_number %}" class="text-decoration-none">
+                            {{ overall_best.cow.name }} ({{ overall_best.cow.tag_number }})
+                        </a>
+                    </p>
+                    <h4 class="text-success">{{ overall_best.total_production|floatformat:2 }} L</h4>
+                {% else %}
+                    <p class="text-muted">No production records available</p>
                 {% endif %}
             </div>
         </div>
@@ -74,7 +97,7 @@
                                 <th>Tag</th>
                                 <th>Name</th>
                                 <th>Next Visit</th>
-                                <th>Purpose</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -83,7 +106,10 @@
                                 <td>{{ visit.cow.tag_number }}</td>
                                 <td>{{ visit.cow.name }}</td>
                                 <td>{{ visit.next_visit_date }}</td>
-                                <td>{{ visit.record_type }}</td>
+                                <td>
+                                    <a href="{% url 'farm_management:cow_vet_history' visit.cow.tag_number %}" 
+                                       class="btn btn-sm btn-primary">View</a>
+                                </td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -116,7 +142,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var graphJSON = {{ plot_div|safe }};
-        Plotly.newPlot('productionGraph', graphJSON.data, graphJSON.layout);
+        var graph = document.getElementById('productionGraph');
+        
+        Plotly.newPlot(graph, graphJSON.data, graphJSON.layout);
+        
+        window.addEventListener('resize', function() {
+            Plotly.Plots.resize(graph);
+        });
     });
 </script>
 {% endblock %}
