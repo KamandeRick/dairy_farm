@@ -49,6 +49,7 @@
                                 <th>Cost</th>
                                 <th>Next Visit</th>
                                 <th>Veterinarian</th>
+                                <th>Actions</th>  <!-- New column -->
                             </tr>
                         </thead>
                         <tbody>
@@ -72,6 +73,9 @@
                                 <td>${{ record.cost|default:'-' }}</td>
                                 <td>{{ record.next_visit_date|default:'-' }}</td>
                                 <td>{{ record.veterinarian }}</td>
+                                <td>
+                                    <a href="{% url 'farm_management:vet_record_detail' record.id %}" class="btn btn-sm btn-primary">View</a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
