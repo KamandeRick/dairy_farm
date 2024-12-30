@@ -84,6 +84,17 @@ def dashboard(request):
         daily_total=Sum('morning_amount') + Sum('evening_amount')
     ).order_by('-daily_total').first()
 
+    #Get Overall Best Producer
+    overall_best = MilkProduction.objects.filter(
+        cow__farm=farm
+    ).values('cow').annotate(
+        total_production=Sum('morning_amount') + Sum('evening_amount')
+    ).order_by('-total_production').first()
+
+    if overall_best:
+        overall_best['cow'] = Cow.objects.get(id=overall_best['cow'])
+
+
     # Get last 7 days production data for the graph
     #last_7_days = []
     #for i in range(7):
@@ -148,6 +159,7 @@ def dashboard(request):
         'total_milk': total_milk,
         'upcoming_visits': upcoming_visits,
         'today_best': today_best,
+        'overall_best': overall_best,
         #'production_data': json.dumps(list(reversed(last_7_days))),
         'latest_milk_records': latest_milk_records,
         'recent_vet_records': recent_vet_records,
@@ -302,7 +314,7 @@ def milk_production_list(request):
     ).order_by('-date')
     
     # Pagination
-    paginator = Paginator(records_list, 2)  # Show 10 records per page
+    paginator = Paginator(records_list, 10)  # Show 10 records per page
     page_number = request.GET.get('page', 1)
     
     try:
