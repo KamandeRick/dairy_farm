@@ -10,6 +10,39 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="filter-form" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="record_type" class="form-label">Record Type</label>
+                    <select name="record_type" id="record_type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for type in record_types %}
+                            <option value="{{ type }}" {% if type == current_record_type %}selected{% endif %}>
+                                {{ type }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="sort_date" class="form-label">Sort by Date</label>
+                    <select name="sort_date" id="sort_date" class="form-select">
+                        <option value="-date" {% if current_sort_date == '-date' %}selected{% endif %}>
+                            Newest First
+                        </option>
+                        <option value="date" {% if current_sort_date == 'date' %}selected{% endif %}>
+                            Oldest First
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetFilters()">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -55,18 +88,33 @@
 
 {% block extra_js %}
 <script>
+function getFilteredURL(pageNumber = null) {
+    const form = document.getElementById('filter-form');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    if (pageNumber) {
+        params.set('page', pageNumber);
+    }
+    return `?${params.toString()}`;
+}
+
+function resetFilters() {
+    document.getElementById('record_type').value = '';
+    document.getElementById('sort_date').value = '-date';
+    document.getElementById('filter-form').submit();
+}
+
 function changePage(pageNumber) {
-    fetch(`?page=${pageNumber}`, {
+    const url = getFilteredURL(pageNumber);
+    fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => response.json())
     .then(data => {
-        // Update table content
         document.getElementById('vet-records-table').innerHTML = data.html;
         
-        // Update pagination controls
         const prevButton = document.querySelector('.pagination-controls button:first-child');
         const nextButton = document.querySelector('.pagination-controls button:last-child');
         const paginationInfo = document.querySelector('.pagination-info');
@@ -80,9 +128,44 @@ function changePage(pageNumber) {
         nextButton.onclick = () => changePage(data.current_page + 1);
         
         paginationInfo.textContent = `Page ${data.current_page} of ${data.total_pages}`;
+        
+        // Update URL without refresh
+        history.pushState({}, '', url);
     })
     .catch(error => console.error('Error:', error));
 }
+
+// Handle form submission
+document.getElementById('filter-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const url = getFilteredURL();
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('vet-records-table').innerHTML = data.html;
+        
+        const paginationInfo = document.querySelector('.pagination-info');
+        paginationInfo.textContent = `Page ${data.current_page} of ${data.total_pages}`;
+        
+        // Update pagination buttons state
+        const prevButton = document.querySelector('.pagination-controls button:first-child');
+        const nextButton = document.querySelector('.pagination-controls button:last-child');
+        
+        prevButton.disabled = !data.has_previous;
+        prevButton.classList.toggle('disabled', !data.has_previous);
+        
+        nextButton.disabled = !data.has_next;
+        nextButton.classList.toggle('disabled', !data.has_next);
+        
+        // Update URL without refresh
+        history.pushState({}, '', url);
+    })
+    .catch(error => console.error('Error:', error));
+});
 </script>
 {% endblock %}
 {% endblock %}
