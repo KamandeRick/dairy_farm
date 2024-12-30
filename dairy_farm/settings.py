@@ -86,9 +86,9 @@ DATABASES = {
 }
 
 # Auth settings
-LOGIN_REDIRECT_URL = '/'  # Redirect to dashboard after login
-LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redirect to login page after logout
-LOGIN_URL = '/accounts/login/'  # Where to redirect if user isn't logged in
+LOGIN_REDIRECT_URL = '/dashboard/'  # Redirect to dashboard after login
+LOGOUT_REDIRECT_URL = '/'  # Redirect to landing page after logout
+LOGIN_URL = '/'  # Where to redirect if user isn't logged in
 
 
 
