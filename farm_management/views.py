@@ -412,6 +412,12 @@ def cow_vet_history(request, tag_number):
     return render(request, 'farm_management/cow_vet_history.html', context)
 
 @login_required
+def vet_record_detail(request, record_id):
+    farm = request.user.farm_set.first()
+    record = get_object_or_404(VeterinaryRecord, id=record_id, cow__farm=farm)
+    return render(request, 'farm_management/vet_detail.html', {'record': record})
+
+@login_required
 def add_cow(request):
     farm = request.user.farm_set.first()
     if request.method == 'POST':
