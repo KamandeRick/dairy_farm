@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Veterinary Record Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Veterinary Record Detail</h2>
+            <a href="{% url 'farm_management:vet_record_list' %}" class="btn btn-secondary">Back to List</a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Basic Information</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ record.date }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cow Tag Number</th>
+                            <td>
+                                <a href="{% url 'farm_management:cow_detail' record.cow.tag_number %}">
+                                    {{ record.cow.tag_number }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Record Type</th>
+                            <td>{{ record.get_record_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Veterinarian</th>
+                            <td>{{ record.veterinarian }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h4>Treatment Details</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Diagnosis</th>
+                            <td>{{ record.diagnosis }}</td>
+                        </tr>
+                        <tr>
+                            <th>Treatment</th>
+                            <td>{{ record.treatment }}</td>
+                        </tr>
+                        <tr>
+                            <th>Medicine Given</th>
+                            <td>{{ record.medicine_given|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Dosage</th>
+                            <td>{{ record.dosage|default:"-" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h4>Additional Information</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Cost</th>
+                            <td>{{ record.cost|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Next Visit Date</th>
+                            <td>{{ record.next_visit_date|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Notes</th>
+                            <td>{{ record.notes|linebreaks|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Recorded By</th>
+                            <td>{{ record.recorded_by.username }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
