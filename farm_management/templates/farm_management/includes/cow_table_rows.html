@@ -4,6 +4,7 @@
     <td>{{ cow.name }}</td>
     <td>{{ cow.breed }}</td>
     <td>{{ cow.status }}</td>
+    <td>{{ cow.date_of_birth }}</td>
     <td>
         <a href="{% url 'farm_management:cow_detail' cow.tag_number %}" 
            class="btn btn-sm btn-primary">View</a>
