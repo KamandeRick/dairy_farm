@@ -313,12 +313,26 @@ def milk_production_list(request):
 @login_required
 def vet_record_list(request):
     farm = request.user.farm_set.first()
-    records_list = VeterinaryRecord.objects.select_related('cow').filter(
+    records_list = VeterinaryRecord.objects.select_related('cow').filter(cow__farm=farm)
+    
+    # Get filter parameters
+    record_type = request.GET.get('record_type', '')
+    sort_date = request.GET.get('sort_date', '-date')  # Default to descending
+    
+    # Apply filters
+    if record_type:
+        records_list = records_list.filter(record_type=record_type)
+    
+    # Apply sorting
+    records_list = records_list.order_by(sort_date)
+    
+    # Get unique record types for the filter dropdown
+    record_types = VeterinaryRecord.objects.filter(
         cow__farm=farm
-    ).order_by('-date')
+    ).values_list('record_type', flat=True).distinct()
     
     # Pagination
-    paginator = Paginator(records_list, 15)  # Show 15 records per page
+    paginator = Paginator(records_list, 10)
     page_number = request.GET.get('page', 1)
     
     try:
@@ -347,6 +361,9 @@ def vet_record_list(request):
         'has_next': records_list.has_next(),
         'previous_page_number': records_list.previous_page_number if records_list.has_previous() else 1,
         'next_page_number': records_list.next_page_number if records_list.has_next() else paginator.num_pages,
+        'record_types': record_types,
+        'current_record_type': record_type,
+        'current_sort_date': sort_date,
     }
     return render(request, 'farm_management/vet_record_list.html', context)
 
