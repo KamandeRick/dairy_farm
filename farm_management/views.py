@@ -7,7 +7,7 @@ from django import forms
 from datetime import timedelta
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
-from .models import Farm, Cow, MilkProduction, VeterinaryRecord
+from .models import Farm, Cow, MilkProduction, VeterinaryRecord, EmailVerificationToken
 from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm, CustomUserCreationForm
 import plotly.graph_objects as go
 from plotly.utils import PlotlyJSONEncoder
@@ -15,7 +15,10 @@ import json
 from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-
+from django.core.mail import send_mail
+from django.utils.html import strip_tags
+from django.conf import settings
+from django.urls import reverse
 
 def index(request):
     if request.user.is_authenticated:
@@ -27,21 +30,63 @@ def register(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Create a farm for the new user
-            farm = Farm.objects.create(
-                name=f"{user.username}'s Farm",
-                owner=user
+            
+            # Create verification token
+            verification_token = EmailVerificationToken.objects.create(user=user)
+            
+            # Create verification link
+            verification_link = request.build_absolute_uri(
+                reverse('farm_management:verify_email', args=[str(verification_token.token)])
             )
-            # Add user to Farm Owner group
-            owner_group = Group.objects.get(name='Farm Owner')
-            user.groups.add(owner_group)
-
-
-            messages.success(request, 'Account created successfully. You can now login.')
+            
+            # Send verification email
+            context = {
+                'user': user,
+                'verification_link': verification_link,
+            }
+            
+            html_message = render_to_string('registration/verification_email.html', context)
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                'Verify your email address',
+                plain_message,
+                settings.EMAIL_HOST_USER,
+                [user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Please check your email to verify your account.')
             return redirect('login')
     else:
         form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+def verify_email(request, token):
+    verification_token = get_object_or_404(EmailVerificationToken, token=token)
+    user = verification_token.user
+    
+    if not user.is_active:
+        user.is_active = True
+        user.save()
+        
+        # Create farm and add to group after verification
+        farm = Farm.objects.create(
+            name=f"{user.username}'s Farm",
+            owner=user
+        )
+        owner_group = Group.objects.get(name='Farm Owner')
+        user.groups.add(owner_group)
+        
+        # Delete the verification token
+        verification_token.delete()
+        
+        messages.success(request, 'Your email has been verified. You can now login.')
+    else:
+        messages.info(request, 'This account has already been verified.')
+    
+    return redirect('login')
 
 @login_required
 def dashboard(request):
