@@ -174,16 +174,31 @@ if config.is_valid_platform():
     ALLOWED_HOSTS.append('.platformsh.site')
     DEBUG = False
     
-    # Set STATIC_ROOT only once, in the Platform.sh environment
-    if config.appDir:
-        STATIC_ROOT = Path(config.appDir) / 'static'
-    else:
-        STATIC_ROOT = BASE_DIR / 'staticfiles'  # fallback if appDir is not available
-        
+    # Platform.sh static root
+    STATIC_ROOT = Path(config.appDir) / 'static' if config.appDir else BASE_DIR / 'staticfiles'
+
     if config.projectEntropy:
         SECRET_KEY = config.projectEntropy
 
-    # Database configuration...
+    # Make sure database configuration is correct for Platform.sh
+    if not config.in_build():
+        db_settings = config.credentials('database')
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': db_settings['path'],
+                'USER': db_settings['username'],
+                'PASSWORD': db_settings['password'],
+                'HOST': db_settings['host'],
+                'PORT': db_settings['port'],
+            }
+        }
 else:
-    # Local development static root
+    # Local development settings
     STATIC_ROOT = BASE_DIR / 'staticfiles'
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
