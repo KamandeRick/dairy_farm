@@ -32,7 +32,11 @@ def register(request):
             user = form.save()
             
             # Create verification token
-            verification_token = EmailVerificationToken.objects.create(user=user)
+            try:
+                verification_token = EmailVerificationToken.objects.create(user=user)
+            except Exception as e:
+                messages.error(request, f"Token creation failed: {str(e)}")
+                return redirect('register')
             
             # Create verification link
             verification_link = request.build_absolute_uri(
