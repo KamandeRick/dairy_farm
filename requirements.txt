@@ -3,6 +3,7 @@ backports.zoneinfo==0.2.1
 Django==4.2.17
 django-widget-tweaks==1.5.0
 packaging==24.2
+platformshconfig==2.4.0
 plotly==5.24.1
 python-dotenv==1.0.1
 sqlparse==0.5.3
