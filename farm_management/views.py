@@ -8,7 +8,7 @@ from datetime import timedelta
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
 from .models import Farm, Cow, MilkProduction, VeterinaryRecord
-from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm
+from .forms import CowForm, MilkProductionForm, VeterinaryRecordForm, CustomUserCreationForm
 import plotly.graph_objects as go
 from plotly.utils import PlotlyJSONEncoder
 import json
@@ -24,7 +24,7 @@ def index(request):
 
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             # Create a farm for the new user
@@ -40,7 +40,7 @@ def register(request):
             messages.success(request, 'Account created successfully. You can now login.')
             return redirect('login')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
 @login_required
