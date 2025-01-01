@@ -1,5 +1,5 @@
 name: "dairy_farm"
-type: "python:3.8.1"
+type: "python:3.8"
 
 relationships:
     database: "db:postgresql"
