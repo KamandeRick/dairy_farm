@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if config.is_valid_platform() else False
 
-ALLOWED_HOSTS = ['https://email-verification-5b2q5nq-keig62ybmmiae.us-3.platformsh.site/', 'localhost']
+ALLOWED_HOSTS = ['.platform.site', 'localhost']
 
 
 # Application definition
