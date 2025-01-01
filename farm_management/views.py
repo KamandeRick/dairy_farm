@@ -54,7 +54,7 @@ def register(request):
                 settings.EMAIL_HOST_USER,
                 [user.email],
                 html_message=html_message,
-                fail_silently=False,
+                fail_silently=True,
             )
             
             messages.success(request, 'Please check your email to verify your account.')
