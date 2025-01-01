@@ -132,8 +132,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 #My static files configuration
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static
 
 #My Media files configuration
 MEDIA_URL = 'media/'
@@ -167,28 +166,29 @@ LOGGING = {
     },
 }
 
-# Platform.sh settings.
+# Platform.sh settings
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Platform.sh settings
 from platformshconfig import Config
 
 config = Config()
 if config.is_valid_platform():
     ALLOWED_HOSTS.append('.platformsh.site')
     DEBUG = False
-
+    
+    # Set STATIC_ROOT only once, in the Platform.sh environment
     if config.appDir:
         STATIC_ROOT = Path(config.appDir) / 'static'
+    else:
+        STATIC_ROOT = BASE_DIR / 'staticfiles'  # fallback if appDir is not available
+        
     if config.projectEntropy:
         SECRET_KEY = config.projectEntropy
 
-    if not config.in_build():
-        db_settings = config.credentials('database')
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': db_settings['path'],
-                'USER': db_settings['username'],
-                'PASSWORD': db_settings['password'],
-                'HOST': db_settings['host'],
-                'PORT': db_settings['port'],
-    },
-}
+    # Database configuration...
+else:
+    # Local development static root
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
