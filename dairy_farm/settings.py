@@ -132,7 +132,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 #My static files configuration
-STATICFILES_DIRS = [BASE_DIR / 'static
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 #My Media files configuration
 MEDIA_URL = 'media/'
