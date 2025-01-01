@@ -1,0 +1,190 @@
+.
+|-- dairy_farm
+|   |-- asgi.py
+|   |-- __init__.py
+|   |-- __pycache__
+|   |   |-- __init__.cpython-38.pyc
+|   |   |-- settings.cpython-38.pyc
+|   |   |-- urls.cpython-38.pyc
+|   |   `-- wsgi.cpython-38.pyc
+|   |-- settings.py
+|   |-- urls.py
+|   `-- wsgi.py
+|-- db.sqlite3
+|-- df_venv
+|   |-- bin
+|   |   |-- activate
+|   |   |-- activate.csh
+|   |   |-- activate.fish
+|   |   |-- Activate.ps1
+|   |   |-- django-admin
+|   |   |-- dotenv
+|   |   |-- easy_install
+|   |   |-- easy_install-3.8
+|   |   |-- pip
+|   |   |-- pip3
+|   |   |-- pip3.8
+|   |   |-- python -> python3
+|   |   |-- python3 -> /usr/bin/python3
+|   |   `-- sqlformat
+|   |-- etc
+|   |   `-- jupyter
+|   |       `-- nbconfig
+|   |           `-- notebook.d
+|   |-- include
+|   |-- lib
+|   |   `-- python3.8
+|   |       `-- site-packages
+|   |           |-- asgiref
+|   |           |-- asgiref-3.8.1.dist-info
+|   |           |-- backports
+|   |           |-- backports.zoneinfo-0.2.1.dist-info
+|   |           |-- django
+|   |           |-- Django-4.2.17.dist-info
+|   |           |-- django_widget_tweaks-1.5.0.dist-info
+|   |           |-- dotenv
+|   |           |-- easy_install.py
+|   |           |-- jupyterlab_plotly
+|   |           |-- packaging
+|   |           |-- packaging-24.2.dist-info
+|   |           |-- pip
+|   |           |-- pip-20.0.2.dist-info
+|   |           |-- pkg_resources
+|   |           |-- pkg_resources-0.0.0.dist-info
+|   |           |-- plotly
+|   |           |-- plotly-5.24.1.dist-info
+|   |           |-- _plotly_future_
+|   |           |-- _plotly_utils
+|   |           |-- __pycache__
+|   |           |-- python_dotenv-1.0.1.dist-info
+|   |           |-- setuptools
+|   |           |-- setuptools-44.0.0.dist-info
+|   |           |-- sqlparse
+|   |           |-- sqlparse-0.5.3.dist-info
+|   |           |-- tenacity
+|   |           |-- tenacity-9.0.0.dist-info
+|   |           |-- typing_extensions-4.12.2.dist-info
+|   |           |-- typing_extensions.py
+|   |           `-- widget_tweaks
+|   |-- lib64 -> lib
+|   |-- pyvenv.cfg
+|   `-- share
+|       |-- jupyter
+|       |   |-- labextensions
+|       |   |   `-- jupyterlab-plotly
+|       |   `-- nbextensions
+|       |       `-- jupyterlab-plotly
+|       `-- python-wheels
+|           |-- appdirs-1.4.3-py2.py3-none-any.whl
+|           |-- CacheControl-0.12.6-py2.py3-none-any.whl
+|           |-- certifi-2019.11.28-py2.py3-none-any.whl
+|           |-- chardet-3.0.4-py2.py3-none-any.whl
+|           |-- colorama-0.4.3-py2.py3-none-any.whl
+|           |-- contextlib2-0.6.0-py2.py3-none-any.whl
+|           |-- distlib-0.3.0-py2.py3-none-any.whl
+|           |-- distro-1.4.0-py2.py3-none-any.whl
+|           |-- html5lib-1.0.1-py2.py3-none-any.whl
+|           |-- idna-2.8-py2.py3-none-any.whl
+|           |-- ipaddr-2.2.0-py2.py3-none-any.whl
+|           |-- lockfile-0.12.2-py2.py3-none-any.whl
+|           |-- msgpack-0.6.2-py2.py3-none-any.whl
+|           |-- packaging-20.3-py2.py3-none-any.whl
+|           |-- pep517-0.8.2-py2.py3-none-any.whl
+|           |-- pip-20.0.2-py2.py3-none-any.whl
+|           |-- pkg_resources-0.0.0-py2.py3-none-any.whl
+|           |-- progress-1.5-py2.py3-none-any.whl
+|           |-- pyparsing-2.4.6-py2.py3-none-any.whl
+|           |-- requests-2.22.0-py2.py3-none-any.whl
+|           |-- retrying-1.3.3-py2.py3-none-any.whl
+|           |-- setuptools-44.0.0-py2.py3-none-any.whl
+|           |-- six-1.14.0-py2.py3-none-any.whl
+|           |-- toml-0.10.0-py2.py3-none-any.whl
+|           |-- urllib3-1.25.8-py2.py3-none-any.whl
+|           |-- webencodings-0.5.1-py2.py3-none-any.whl
+|           `-- wheel-0.34.2-py2.py3-none-any.whl
+|-- farm_management
+|   |-- admin.py
+|   |-- apps.py
+|   |-- forms.py
+|   |-- __init__.py
+|   |-- migrations
+|   |   |-- 0001_initial.py
+|   |   |-- 0002_auto_20241225_1910.py
+|   |   |-- 0003_milkproduction_recorded_by_and_more.py
+|   |   |-- 0004_alter_cow_unique_together.py
+|   |   |-- 0005_alter_cow_tag_number_alter_cow_unique_together.py
+|   |   |-- 0006_auto_20241226_0629.py
+|   |   |-- 0007_alter_farm_options_and_more.py
+|   |   |-- 0008_cow_acquired_from_cow_cause_of_death_and_more.py
+|   |   |-- 0009_alter_cow_paternal_ancestry_emailverificationtoken.py
+|   |   |-- __init__.py
+|   |   `-- __pycache__
+|   |       |-- 0001_initial.cpython-38.pyc
+|   |       |-- 0002_auto_20241225_1910.cpython-38.pyc
+|   |       |-- 0003_milkproduction_recorded_by_and_more.cpython-38.pyc
+|   |       |-- 0004_alter_cow_unique_together.cpython-38.pyc
+|   |       |-- 0005_alter_cow_tag_number_alter_cow_unique_together.cpython-38.pyc
+|   |       |-- 0006_auto_20241226_0629.cpython-38.pyc
+|   |       |-- 0007_alter_farm_options_and_more.cpython-38.pyc
+|   |       |-- 0007_alter_farm_options.cpython-38.pyc
+|   |       |-- 0008_cow_acquired_from_cow_cause_of_death_and_more.cpython-38.pyc
+|   |       |-- 0009_alter_cow_paternal_ancestry_emailverificationtoken.cpython-38.pyc
+|   |       `-- __init__.cpython-38.pyc
+|   |-- mixins.py
+|   |-- models.py
+|   |-- permissions.py
+|   |-- __pycache__
+|   |   |-- admin.cpython-38.pyc
+|   |   |-- apps.cpython-38.pyc
+|   |   |-- forms.cpython-38.pyc
+|   |   |-- __init__.cpython-38.pyc
+|   |   |-- mixins.cpython-38.pyc
+|   |   |-- models.cpython-38.pyc
+|   |   |-- urls.cpython-38.pyc
+|   |   `-- views.cpython-38.pyc
+|   |-- templates
+|   |   |-- base.html
+|   |   `-- farm_management
+|   |       |-- {%
+|   |       |-- base.html
+|   |       |-- cow_detail.html
+|   |       |-- cow_form.html
+|   |       |-- cow_list.html
+|   |       |-- cow_milk_history.html
+|   |       |-- cow_vet_history.html
+|   |       |-- dashboard.html
+|   |       |-- includes
+|   |       |   |-- cow_table_rows.html
+|   |       |   |-- milk_records_table.html
+|   |       |   |-- milk_records_table_rows.html
+|   |       |   `-- vet_records_table_rows.html
+|   |       |-- index.html
+|   |       |-- milk_production_form.html
+|   |       |-- milk_production_list.html
+|   |       |-- password_reset_complete.html
+|   |       |-- password_reset_confirm.html
+|   |       |-- password_reset_done.html
+|   |       |-- password_reset_form.html
+|   |       |-- vet_detail.html
+|   |       |-- vet_record_form.html
+|   |       `-- vet_record_list.html
+|   |-- tests.py
+|   |-- urls.py
+|   `-- views.py
+|-- manage.py
+|-- media
+|-- project_struct.txt
+|-- README.md
+|-- requirements.txt
+|-- static
+|   |-- components
+|   |-- js
+|   `-- MilkProductionGraph.jsx
+`-- templates
+    |-- base.html
+    `-- registration
+        |-- login.html
+        |-- register.html
+        `-- verification_email.html
+
+62 directories, 125 files
