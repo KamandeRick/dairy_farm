@@ -167,11 +167,6 @@ LOGGING = {
 }
 
 # Platform.sh settings
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-
-# Platform.sh settings
 from platformshconfig import Config
 
 config = Config()
