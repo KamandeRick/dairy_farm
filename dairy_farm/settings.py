@@ -171,7 +171,8 @@ LOGGING = {
 # Platform.sh settings
 config = Config()
 if config.is_valid_platform():
-    ALLOWED_HOSTS.append('.platformsh.site', '.platform.sh')
+    ALLOWED_HOSTS.append('.platformsh.site')
+    ALLOWED_HOSTS.append('.platform.sh')
     DEBUG = False
     
     # Platform.sh static root
