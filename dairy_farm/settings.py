@@ -90,6 +90,7 @@ DATABASES = {
         # Replace this value with your local database's connection string.
         default='sqlite:///db.sqlite3',
         conn_max_age=600
+    )
 }
 
 # Auth settings
