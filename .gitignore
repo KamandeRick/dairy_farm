@@ -16,6 +16,7 @@ ENV/
 *.log
 db.sqlite3
 media/
+/media
 
 # IDE - VSCode
 .vscode/
@@ -32,6 +33,7 @@ media/
 
 # Static files collected
 staticfiles/
+/static
 
 # Database backups
 *.sql

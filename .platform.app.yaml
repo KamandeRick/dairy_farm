@@ -13,16 +13,13 @@ web:
     locations:
         "/":
             passthru: true
-            root: "static"
             allow: true
-            expires: 1h
-            scripts: true
-            index: 
-                - index.php
         "/static":
             root: "static"
             expires: 1h
             allow: true
+            scripts: false
+            indexes: false
 
 # The size of the persistent disk of the application (in MB).
 disk: 512

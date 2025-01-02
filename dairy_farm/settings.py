@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from platformshconfig import Config
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -24,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-qrr2@a_mfx!&c4ch=14i#(-)9w%^tnx8z@^p9w(+_tza828%)s')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -167,11 +169,9 @@ LOGGING = {
 }
 
 # Platform.sh settings
-from platformshconfig import Config
-
 config = Config()
 if config.is_valid_platform():
-    ALLOWED_HOSTS.append('.platformsh.site')
+    ALLOWED_HOSTS.append('.platformsh.site', '.platform.sh')
     DEBUG = False
     
     # Platform.sh static root
@@ -179,6 +179,10 @@ if config.is_valid_platform():
 
     if config.projectEntropy:
         SECRET_KEY = config.projectEntropy
+
+    # Configure static files
+    STATIC_ROOT = Path(config.appDir) / 'static'
+    STATIC_URL = '/static/'
 
     # Make sure database configuration is correct for Platform.sh
     if not config.in_build():
@@ -194,11 +198,16 @@ if config.is_valid_platform():
             }
         }
 else:
-    # Local development settings
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    DEBUG = True
+    
+    # Local database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    
+    # Local static files
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
