@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.platform.site', 'localhost']
+ALLOWED_HOSTS = ['.platform.site', 'localhost', '.platform.sh']
 
 
 # Application definition

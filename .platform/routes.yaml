@@ -1,6 +1,12 @@
 "https://{default}/":
     type: upstream
     upstream: "dairy_farm:http"
+    tls:
+        strict_transport_security:
+            enabled: true
+            include_subdomains: true
+            preload: true
+
 "https://www.{default}/":
     type: redirect
     to: "https://{default}/"
