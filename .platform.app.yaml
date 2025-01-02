@@ -19,7 +19,7 @@ web:
             expires: 1h
             allow: true
             scripts: false
-            indexes: false
+            index: false
 
 # The size of the persistent disk of the application (in MB).
 disk: 512
