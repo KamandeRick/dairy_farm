@@ -13,7 +13,7 @@ A dairy farm management web application built with Django framework.
 
 - Python 3.8+
 - Django 4.2+
-- Other dependencies (list your specific requirements)
+- Other dependencies (See requirements.txt)
 
 ## Installation
 
@@ -66,8 +66,7 @@ python manage.py test
 ```
 
 ## Deployment
-
-
+https://render.com/docs/deploy-django
 
 ## Contributing
 
