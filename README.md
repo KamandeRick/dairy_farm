@@ -1,6 +1,6 @@
 # Dairy Farm
 
-A dairy farm management web application built with Django framework.
+A dairy farm management web application built with Django framework. Designed to handle the clerical operational needs of small scale dairy farmers.
 
 ## Features
 
@@ -13,7 +13,7 @@ A dairy farm management web application built with Django framework.
 
 - Python 3.8+
 - Django 4.2+
-- Other dependencies (list your specific requirements)
+- Other dependencies (See requirements.txt)
 
 ## Installation
 
